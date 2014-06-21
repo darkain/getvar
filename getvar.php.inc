@@ -122,6 +122,13 @@ class getvar {
 		}
 		return $value;
 	}
+
+
+	public function timestamp($name) {
+		$value = getvar::item($name, _GETVAR_BASIC);
+		if (ctype_digit($value)) return (int) $value;
+		return strtotime($value);
+	}
 	
 
 	protected function _clean(&$value, $flags) {
