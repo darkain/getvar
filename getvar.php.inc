@@ -109,7 +109,7 @@ class getvar {
 	public function hash($name='hash') {
 		$hash = getvar::item($name, _GETVAR_BASIC);
 		if (!strlen($hash)) return false;
-		if (!preg_match('/^[a-fA-F0-9]*$/', $hash)) return false;
+		if (!ctype_xdigit($hash)) return false;
 		return $hash;
 	}
 
@@ -118,7 +118,7 @@ class getvar {
 		$value = getvar::item($name, _GETVAR_BASIC);
 		if (!is_array($value)) $value = array();
 		foreach ($value as $key => &$hash) {
-			if (!preg_match('/^[a-fA-F0-9]*$/', $hash)) $hash = '';
+			if (!ctype_xdigit($hash)) $hash = '';
 		}
 		return $value;
 	}
