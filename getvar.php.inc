@@ -83,6 +83,13 @@ class getvar {
 	}
 
 
+	public function stringNull($name, $flags=false) {
+		$text = (string) getvar::item($name, $flags);
+		if (empty($text)  &&  $text !== '0') return NULL;
+		return $text;
+	}
+
+
 	public function stringArray($name, $flags=false) {
 		$value = getvar::item($name, $flags);
 		if (!is_array($value)) $value = array();
