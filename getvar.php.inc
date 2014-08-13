@@ -186,7 +186,7 @@ class getvar {
 			if ($this->pudl) {
 				$value = $this->pudl->safe($value);
 			} else {
-				$value = mysqli_real_escape_string($value);
+				$value = @mysql_real_escape_string($value);
 			}
 		}
 
