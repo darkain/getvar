@@ -60,7 +60,7 @@ class getvar {
 	public function intArray($name, $flags=false) {
 		$value = $this($name, $flags);
 		if (!is_array($value)) $value = array();
-		foreach ($value as $key => &$item) {
+		foreach ($value as &$item) {
 			$item = (int) $item;
 		} unset($item);
 		return $value;
@@ -77,7 +77,7 @@ class getvar {
 	public function floatArray($name, $flags=false) {
 		$value = $this($name, $flags);
 		if (!is_array($value)) $value = array();
-		foreach ($value as $key => &$item) {
+		foreach ($value as &$item) {
 			$item = (float) $item;
 		} unset($item);
 		return $value;
@@ -99,7 +99,7 @@ class getvar {
 	public function stringArray($name, $flags=false) {
 		$value = $this($name, $flags);
 		if (!is_array($value)) $value = array();
-		foreach ($value as $key => &$item) {
+		foreach ($value as &$item) {
 			$item = (string) $item;
 		} unset($item);
 		return $value;
@@ -127,12 +127,28 @@ class getvar {
 	}
 
 
-	public function hashArray($name) {
+	public function hashArray($name='hash') {
 		$value = $this($name, _GETVAR_BASIC);
 		if (!is_array($value)) $value = array();
-		foreach ($value as $key => &$hash) {
+		foreach ($value as &$hash) {
 			if (!ctype_xdigit($hash)) $hash = false;
-		}
+		} unset($hash);
+		return $value;
+	}
+
+
+	public function binary($name='hash') {
+		$hash = $this->hash($name);
+		if ($hash === false) return false;
+		return hex2bin($hash);
+	}
+
+
+	public function binaryArray($name='hash') {
+		$value = $this->hashArray($name);
+		foreach ($value as &$hash) {
+			if ($hash !== false) $hash = hex2bin($hash);
+		} unset($hash);
 		return $value;
 	}
 
@@ -148,7 +164,7 @@ class getvar {
 		if ($flags === false) $flags = $this->default;
 
 		if (is_array($value)) {
-			foreach ($value as $key => &$item) {
+			foreach ($value as &$item) {
 				$this->_clean($item, $flags);
 			} unset($item);
 			return $value;
