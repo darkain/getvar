@@ -107,8 +107,8 @@ class getvar {
 
 	public function bool($name) {
 		$value = getvar::string($name, _GETVAR_BASIC);
-		if (strtolower($value) === 'true')  $value = true;
-		if (strtolower($value) === 'false') $value = false;
+		if (!strcasecmp($value, 'true'))	return true;
+		if (!strcasecmp($value, 'false'))	return false;
 		return (bool) $value;
 	}
 
@@ -125,7 +125,7 @@ class getvar {
 		$value = getvar::item($name, _GETVAR_BASIC);
 		if (!is_array($value)) $value = array();
 		foreach ($value as $key => &$hash) {
-			if (!ctype_xdigit($hash)) $hash = '';
+			if (!ctype_xdigit($hash)) $hash = false;
 		}
 		return $value;
 	}
@@ -136,7 +136,7 @@ class getvar {
 		if (ctype_digit($value)) return (int) $value;
 		return strtotime($value);
 	}
-	
+
 
 	protected function _clean(&$value, $flags) {
 		if ($flags === false) $flags = $this->default;
