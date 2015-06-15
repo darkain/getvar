@@ -52,7 +52,7 @@ class getvar {
 
 	public function int($name, $flags=false) {
 		$value = $this($name, $flags);
-		if (strcasecmp($value, 'true') === 0) return 1;
+		if (!strcasecmp($value, 'true')) return 1;
 		return (int) $value;
 	}
 
@@ -69,7 +69,7 @@ class getvar {
 
 	public function float($name, $flags=false) {
 		$value = $this($name, $flags);
-		if (strcasecmp($value, 'true') === 0) return 1.0;
+		if (!strcasecmp($value, 'true')) return 1.0;
 		return (float) $value;
 	}
 
