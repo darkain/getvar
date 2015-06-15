@@ -14,6 +14,25 @@ define('_GETVAR_HTML_SQL',	_GETVAR_SQLSAFE | _GETVAR_HTMLSAFE);
 
 class getvar {
 
+	public function __invoke($name, $flags=false) {
+		//attempt to get the value from POST
+		if (($flags & _GETVAR_NOPOST) == 0) {
+			if (isset($_POST[$name])) $value = $_POST[$name];
+		}
+
+		//attempt to get the value from GET
+		if (!isset($value)  &&  (($flags & _GETVAR_NOGET) == 0)) {
+			if (isset($_GET[$name])) $value = $_GET[$name];
+		}
+
+		//value not found
+		if (!isset($value)) return NULL;
+
+		//clean and return value
+		return $this->_clean($value, $flags);
+	}
+
+
 	public function server($name, $default=NULL, $flags=false) {
 		if (!isset($_SERVER[$name])) return $default;
 		return $this->_clean($_SERVER[$name], $flags);
@@ -27,81 +46,68 @@ class getvar {
 
 
 	public function item($name, $flags=false) {
-		$value = null;
-
-		//attempt to get the value from POST
-		if (($flags & _GETVAR_NOPOST) == 0) {
-			if (isset($_POST[$name])) $value = $_POST[$name];
-		}
-
-		//attempt to get the value from GET
-		if (is_null($value)  &&  (($flags & _GETVAR_NOGET) == 0)) {
-			if (isset($_GET[$name])) $value = $_GET[$name];
-		}
-
-		//clean and return value
-		return $this->_clean($value, $flags);
+		return $this($name, $flags);
 	}
 
 
 	public function int($name, $flags=false) {
-		$value = getvar::item($name, $flags);
+		$value = $this($name, $flags);
 		if (strcasecmp($value, 'true') === 0) return 1;
 		return (int) $value;
 	}
 
 
 	public function intArray($name, $flags=false) {
-		$value = getvar::item($name, $flags);
+		$value = $this($name, $flags);
 		if (!is_array($value)) $value = array();
 		foreach ($value as $key => &$item) {
 			$item = (int) $item;
-		}
+		} unset($item);
 		return $value;
 	}
 
 
 	public function float($name, $flags=false) {
-		$value = getvar::item($name, $flags);
+		$value = $this($name, $flags);
 		if (strcasecmp($value, 'true') === 0) return 1.0;
 		return (float) $value;
 	}
 
 
 	public function floatArray($name, $flags=false) {
-		$value = getvar::item($name, $flags);
+		$value = $this($name, $flags);
 		if (!is_array($value)) $value = array();
 		foreach ($value as $key => &$item) {
 			$item = (float) $item;
-		}
+		} unset($item);
 		return $value;
 	}
 
 
 	public function string($name, $flags=false) {
-		return (string) getvar::item($name, $flags);
+		return (string) $this($name, $flags);
 	}
 
 
 	public function stringNull($name, $flags=false) {
-		$text = (string) getvar::item($name, $flags);
+		$text = (string) $this($name, $flags);
 		if (empty($text)  &&  $text !== '0') return NULL;
 		return $text;
 	}
 
 
 	public function stringArray($name, $flags=false) {
-		$value = getvar::item($name, $flags);
+		$value = $this($name, $flags);
 		if (!is_array($value)) $value = array();
 		foreach ($value as $key => &$item) {
 			$item = (string) $item;
-		}
+		} unset($item);
 		return $value;
 	}
 
 
 	public function id($name='id') {
-		return (int) getvar::item($name, _GETVAR_BASIC);
+		return (int) $this($name, _GETVAR_BASIC);
 	}
 
 
@@ -114,7 +120,7 @@ class getvar {
 
 
 	public function hash($name='hash') {
-		$hash = getvar::item($name, _GETVAR_BASIC);
+		$hash = $this($name, _GETVAR_BASIC);
 		if (!strlen($hash)) return false;
 		if (!ctype_xdigit($hash)) return false;
 		return $hash;
@@ -122,7 +128,7 @@ class getvar {
 
 
 	public function hashArray($name) {
-		$value = getvar::item($name, _GETVAR_BASIC);
+		$value = $this($name, _GETVAR_BASIC);
 		if (!is_array($value)) $value = array();
 		foreach ($value as $key => &$hash) {
 			if (!ctype_xdigit($hash)) $hash = false;
@@ -132,7 +138,7 @@ class getvar {
 
 
 	public function timestamp($name) {
-		$value = getvar::item($name, _GETVAR_BASIC);
+		$value = $this($name, _GETVAR_BASIC);
 		if (ctype_digit($value)) return (int) $value;
 		return strtotime($value);
 	}
@@ -144,7 +150,7 @@ class getvar {
 		if (is_array($value)) {
 			foreach ($value as $key => &$item) {
 				$this->_clean($item, $flags);
-			}
+			} unset($item);
 			return $value;
 		}
 
