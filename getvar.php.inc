@@ -50,6 +50,16 @@ class getvar {
 	}
 
 
+	public function lists($name, $separator=',', $flags=false) {
+		$value = explode($separator, $this($name, $flags));
+		foreach ($value as $key => &$item) {
+			$item = trim($item);
+			if ($item === '') unset($value[$key]);
+		}
+		return $value;
+	}
+
+
 	public function int($name, $flags=false) {
 		$value = $this($name, $flags);
 		if (!strcasecmp($value, 'true')) return 1;
@@ -60,9 +70,14 @@ class getvar {
 	public function intArray($name, $flags=false) {
 		$value = $this($name, $flags);
 		if (!is_array($value)) $value = array();
-		foreach ($value as &$item) {
-			$item = (int) $item;
-		} unset($item);
+		foreach ($value as &$item) $item = (int) $item;
+		return $value;
+	}
+
+
+	public function intList($name, $separator=',', $flags=false) {
+		$value = $this->lists($name, $separator, $flags);
+		foreach ($value as &$item) $item = (int) $item;
 		return $value;
 	}
 
@@ -77,9 +92,14 @@ class getvar {
 	public function floatArray($name, $flags=false) {
 		$value = $this($name, $flags);
 		if (!is_array($value)) $value = array();
-		foreach ($value as &$item) {
-			$item = (float) $item;
-		} unset($item);
+		foreach ($value as &$item) $item = (float) $item;
+		return $value;
+	}
+
+
+	public function floatList($name, $separator=',', $flags=false) {
+		$value = $this->lists($name, $separator, $flags);
+		foreach ($value as &$item) $item = (float) $item;
 		return $value;
 	}
 
@@ -99,9 +119,14 @@ class getvar {
 	public function stringArray($name, $flags=false) {
 		$value = $this($name, $flags);
 		if (!is_array($value)) $value = array();
-		foreach ($value as &$item) {
-			$item = (string) $item;
-		} unset($item);
+		foreach ($value as &$item) $item = (string) $item;
+		return $value;
+	}
+
+
+	public function stringList($name, $separator=',', $flags=false) {
+		$value = $this->lists($name, $separator, $flags);
+		foreach ($value as &$item) $item = (string) $item;
 		return $value;
 	}
 
@@ -130,9 +155,14 @@ class getvar {
 	public function hashArray($name='hash') {
 		$value = $this($name, _GETVAR_BASIC);
 		if (!is_array($value)) $value = array();
-		foreach ($value as &$hash) {
-			if (!ctype_xdigit($hash)) $hash = false;
-		} unset($hash);
+		foreach ($value as $key => $hash) if (!ctype_xdigit($hash)) unset($value[$key]);
+		return $value;
+	}
+
+
+	public function hashList($name, $separator=',', $flags=false) {
+		$value = $this->lists($name, $separator, $flags);
+		foreach ($value as $key => $hash) if (!ctype_xdigit($hash)) unset($value[$key]);
 		return $value;
 	}
 
