@@ -109,6 +109,16 @@ class getvar {
 	}
 
 
+	public function stringUpper($name, $flags=false) {
+		return strtoupper((string)$this($name, $flags));
+	}
+
+
+	public function stringLower($name, $flags=false) {
+		return strtolower((string)$this($name, $flags));
+	}
+
+
 	public function stringNull($name, $flags=false) {
 		$text = (string) $this($name, $flags);
 		if (empty($text)  &&  $text !== '0') return NULL;
