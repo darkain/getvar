@@ -246,7 +246,7 @@ class getvar {
 		//prevent SQL injection
 		if (($flags & _GETVAR_SQLSAFE) > 0) {
 			if ($this->pudl) {
-				$value = $this->pudl->safe($value);
+				$value = $this->pudl->escape($value);
 			} else {
 				$value = @mysql_real_escape_string($value);
 			}
