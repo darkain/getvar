@@ -154,18 +154,24 @@ class getvar {
 	}
 
 
-	public function hash($name='hash') {
+	public function hash($name='hash', $binary=false) {
 		$hash = $this($name, _GETVAR_BASIC);
 		if (!strlen($hash)) return false;
 		if (!ctype_xdigit($hash)) return false;
-		return $hash;
+		return $binary ? hex2bin($hash) : $hash;
 	}
 
 
-	public function hashArray($name='hash') {
+	public function hashArray($name='hash', $binary=false) {
 		$value = $this($name, _GETVAR_BASIC);
 		if (!is_array($value)) $value = array();
-		foreach ($value as $key => $hash) if (!ctype_xdigit($hash)) unset($value[$key]);
+		foreach ($value as $key => &$hash) {
+			if (!ctype_xdigit($hash)) {
+				unset($value[$key]);
+			} else if ($binary) {
+				$hash = hex2bin($hash);
+			}
+		}
 		return $value;
 	}
 
