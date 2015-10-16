@@ -184,18 +184,12 @@ class getvar {
 
 
 	public function binary($name='hash') {
-		$hash = $this->hash($name);
-		if ($hash === false) return false;
-		return hex2bin($hash);
+		return $this->hash($name, true);
 	}
 
 
 	public function binaryArray($name='hash') {
-		$value = $this->hashArray($name);
-		foreach ($value as &$hash) {
-			if ($hash !== false) $hash = hex2bin($hash);
-		} unset($hash);
-		return $value;
+		return $this->hashArray($name, true);
 	}
 
 
