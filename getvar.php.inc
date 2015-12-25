@@ -105,22 +105,22 @@ class getvar {
 
 
 	public function string($name, $flags=false) {
-		return (string) $this($name, $flags);
+		return $this->_utf8((string)$this($name, $flags));
 	}
 
 
 	public function stringUpper($name, $flags=false) {
-		return strtoupper((string)$this($name, $flags));
+		return strtoupper($this->string($name, $flags));
 	}
 
 
 	public function stringLower($name, $flags=false) {
-		return strtolower((string)$this($name, $flags));
+		return strtolower($this->string($name, $flags));
 	}
 
 
 	public function stringNull($name, $flags=false) {
-		$text = (string) $this($name, $flags);
+		$text = $this->string($name, $flags);
 		if (empty($text)  &&  $text !== '0') return NULL;
 		return $text;
 	}
@@ -129,14 +129,14 @@ class getvar {
 	public function stringArray($name, $flags=false) {
 		$value = $this($name, $flags);
 		if (!is_array($value)) $value = array();
-		foreach ($value as &$item) $item = (string) $item;
+		foreach ($value as &$item) $item = $this->_utf8((string)$item);
 		return $value;
 	}
 
 
 	public function stringList($name, $separator=',', $flags=false) {
 		$value = $this->lists($name, $separator, $flags);
-		foreach ($value as &$item) $item = (string) $item;
+		foreach ($value as &$item) $item = $this->_utf8((string)$item);
 		return $value;
 	}
 
@@ -200,6 +200,14 @@ class getvar {
 	}
 
 
+
+	protected function _utf8($value) {
+		if (mb_detect_encoding($value, 'UTF-8', true)) return $value;
+		return utf8_encode($value);
+	}
+
+
+
 	protected function _clean(&$value, $flags) {
 		if ($flags === false) $flags = $this->default;
 
@@ -256,6 +264,6 @@ class getvar {
 	}
 
 
-	public $pudl = false;
-	public $default = _GETVAR_BASIC;
+	public $pudl	= false;
+	public $default	= _GETVAR_BASIC;
 }
