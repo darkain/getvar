@@ -7,6 +7,7 @@ define('_GETVAR_SQLSAFE',	1 <<  2);
 define('_GETVAR_HTMLSAFE',	1 <<  3);
 define('_GETVAR_URLSAFE',	1 <<  4);
 define('_GETVAR_NOTRIM',	1 <<  5);
+define('_GETVAR_BREAK',		1 <<  6);
 define('_GETVAR_MD5BIN',	1 << 29);
 define('_GETVAR_MD5',		1 << 30);
 define('_GETVAR_HTML_SQL',	_GETVAR_SQLSAFE | _GETVAR_HTMLSAFE);
@@ -221,6 +222,11 @@ class getvar {
 		//strip slashes if magic quotes are enabled
 		if (get_magic_quotes_gpc()) {
 			$value = stripslashes($value);
+		}
+
+		//convert non breaking space character
+		if (($flags & _GETVARB_REAK) == 0) {
+			$value = preg_replace('/[\pZ\pC]/u', ' ', $value);
 		}
 
 		//trim the value
