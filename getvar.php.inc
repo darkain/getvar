@@ -225,7 +225,7 @@ class getvar {
 		}
 
 		//convert non breaking space character
-		if (($flags & _GETVARB_REAK) == 0) {
+		if (($flags & _GETVAR_BREAK) == 0) {
 			$value = preg_replace('/[\pZ\pC]/u', ' ', $value);
 		}
 
