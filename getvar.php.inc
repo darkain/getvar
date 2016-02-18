@@ -226,7 +226,7 @@ class getvar {
 
 		//convert non breaking space character
 		if (($flags & _GETVAR_BREAK) == 0) {
-			$value = preg_replace('/[\pZ\pC]/u', ' ', $value);
+			$value = str_replace("\xC2\xA0", ' ', $value);
 		}
 
 		//trim the value
