@@ -219,10 +219,13 @@ class getvar {
 
 		if (is_array($value)) {
 			foreach ($value as &$item) {
-				$this->_clean($item, $flags);
+				$item = $this->_clean($item, $flags);
 			} unset($item);
 			return $value;
 		}
+
+		//if no value, return
+		if (is_null($value)) return $value;
 
 		//strip slashes if magic quotes are enabled
 		if (get_magic_quotes_gpc()) {
@@ -238,9 +241,6 @@ class getvar {
 		if (($flags & _GETVAR_NOTRIM) == 0) {
 			$value = trim($value);
 		}
-
-		//if no value, return
-		if (is_null($value)) return $value;
 
 		//convert to MD5 checksum (binary)
 		if (($flags & _GETVAR_MD5BIN) > 0) {
