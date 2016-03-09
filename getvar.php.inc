@@ -32,7 +32,7 @@ class getvar {
 		}
 
 		//value not found
-		if (!isset($value)) return NULL;
+		if (!isset($value)) return '';
 
 		//clean and return value
 		return $this->_clean($value, $flags);
