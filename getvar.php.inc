@@ -8,6 +8,7 @@ define('_GETVAR_HTMLSAFE',	1 <<  3);
 define('_GETVAR_URLSAFE',	1 <<  4);
 define('_GETVAR_NOTRIM',	1 <<  5);
 define('_GETVAR_BREAK',		1 <<  6);
+define('_GETVAR_NULL',		1 <<  7);
 define('_GETVAR_MD5BIN',	1 << 29);
 define('_GETVAR_MD5',		1 << 30);
 define('_GETVAR_HTML_SQL',	_GETVAR_SQLSAFE | _GETVAR_HTMLSAFE);
@@ -32,7 +33,9 @@ class getvar {
 		}
 
 		//value not found
-		if (!isset($value)) return '';
+		if (!isset($value)) {
+			return ($flags & _GETVAR_NULL) ? NULL : '';
+		}
 
 		//clean and return value
 		return $this->_clean($value, $flags);
@@ -126,9 +129,9 @@ class getvar {
 
 
 	public function stringNull($name, $flags=false) {
-		$text = $this->string($name, $flags);
-		if (empty($text)  &&  $text !== '0') return NULL;
-		return $text;
+		if ($flags === false) $flags = $this->default;
+		$value = $this($name, $flags|_GETVAR_NULL);
+		return ($value === NULL) ? NULL : $this->_utf8((string)$value);
 	}
 
 
