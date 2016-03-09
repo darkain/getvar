@@ -15,6 +15,11 @@ define('_GETVAR_HTML_SQL',	_GETVAR_SQLSAFE | _GETVAR_HTMLSAFE);
 
 class getvar {
 
+	public function __construct($default=_GETVAR_BASIC) {
+		$this->default = $default;
+	}
+
+
 	public function __invoke($name, $flags=false) {
 		//attempt to get the value from POST
 		if (($flags & _GETVAR_NOPOST) == 0) {
@@ -142,29 +147,29 @@ class getvar {
 	}
 
 
-	public function id($name='id') {
-		return (int) $this($name, _GETVAR_BASIC);
+	public function id($name='id', $flags=false) {
+		return (int) $this($name, $flags);
 	}
 
 
-	public function bool($name) {
-		$value = getvar::string($name, _GETVAR_BASIC);
+	public function bool($name, $flags=false) {
+		$value = $this($name, $flags);
 		if (!strcasecmp($value, 'true'))	return true;
 		if (!strcasecmp($value, 'false'))	return false;
 		return (bool) $value;
 	}
 
 
-	public function hash($name='hash', $binary=false) {
-		$hash = $this($name, _GETVAR_BASIC);
+	public function hash($name='hash', $binary=false, $flags=false) {
+		$hash = $this($name, $flags);
 		if (!strlen($hash)) return false;
 		if (!ctype_xdigit($hash)) return false;
 		return $binary ? hex2bin($hash) : $hash;
 	}
 
 
-	public function hashArray($name='hash', $binary=false) {
-		$value = $this($name, _GETVAR_BASIC);
+	public function hashArray($name='hash', $binary=false, $flags=false) {
+		$value = $this($name, $flags);
 		if (!is_array($value)) $value = array();
 		foreach ($value as $key => &$hash) {
 			if (!ctype_xdigit($hash)) {
@@ -184,18 +189,18 @@ class getvar {
 	}
 
 
-	public function binary($name='hash') {
-		return $this->hash($name, true);
+	public function binary($name='hash', $flags=false) {
+		return $this->hash($name, true, $flags);
 	}
 
 
-	public function binaryArray($name='hash') {
-		return $this->hashArray($name, true);
+	public function binaryArray($name='hash', $flags=false) {
+		return $this->hashArray($name, true, $flags);
 	}
 
 
-	public function timestamp($name) {
-		$value = $this($name, _GETVAR_BASIC);
+	public function timestamp($name, $flags=false) {
+		$value = $this($name, $flags);
 		if (ctype_digit($value)) return (int) $value;
 		return strtotime($value);
 	}
@@ -209,7 +214,7 @@ class getvar {
 
 
 
-	protected function _clean(&$value, $flags) {
+	protected function _clean($value, $flags=false) {
 		if ($flags === false) $flags = $this->default;
 
 		if (is_array($value)) {
@@ -259,7 +264,7 @@ class getvar {
 
 		//prevent SQL injection
 		if (($flags & _GETVAR_SQLSAFE) > 0) {
-			if ($this->pudl) {
+			if (!empty($this->pudl)) {
 				$value = $this->pudl->escape($value);
 			} else {
 				$value = @mysql_real_escape_string($value);
@@ -270,6 +275,6 @@ class getvar {
 	}
 
 
-	public $pudl	= false;
-	public $default	= _GETVAR_BASIC;
+	public $default;
+	public $pudl = NULL;
 }
