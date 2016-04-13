@@ -94,21 +94,29 @@ class getvar {
 	public function float($name, $flags=false) {
 		$value = $this($name, $flags);
 		if (!strcasecmp($value, 'true')) return 1.0;
-		return (float) $value;
+		$value = (float) $value;
+		if (is_nan($value) || is_infinite($value)) return 0.0;
+		return $value;
 	}
 
 
 	public function floatArray($name, $flags=false) {
 		$value = $this($name, $flags);
 		if (!is_array($value)) $value = array();
-		foreach ($value as &$item) $item = (float) $item;
+		foreach ($value as &$item) {
+			$item = (float) $item;
+			if (is_nan($item) || is_infinite($item)) $item = 0.0;
+		}
 		return $value;
 	}
 
 
 	public function floatList($name, $separator=',', $flags=false) {
 		$value = $this->lists($name, $separator, $flags);
-		foreach ($value as &$item) $item = (float) $item;
+		foreach ($value as &$item) {
+			$item = (float) $item;
+			if (is_nan($item) || is_infinite($item)) $item = 0.0;
+		}
 		return $value;
 	}
 
