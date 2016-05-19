@@ -23,22 +23,22 @@ class getvar {
 
 
 	public function __invoke($name, $flags=false) {
-		//attempt to get the value from POST
+		//ATTEMPT TO GET THE VALUE FROM POST
 		if (($flags & _GETVAR_NOPOST) == 0) {
 			if (isset($_POST[$name])) $value = $_POST[$name];
 		}
 
-		//attempt to get the value from GET
+		//ATTEMPT TO GET THE VALUE FROM GET
 		if (!isset($value)  &&  (($flags & _GETVAR_NOGET) == 0)) {
 			if (isset($_GET[$name])) $value = $_GET[$name];
 		}
 
-		//value not found
+		//VALUE NOT FOUND
 		if (!isset($value)) {
 			return ($flags & _GETVAR_NULL) ? NULL : '';
 		}
 
-		//clean and return value
+		//CLEAN AND RETURN VALUE
 		return $this->_clean($value, $flags);
 	}
 
@@ -236,50 +236,50 @@ class getvar {
 			return $value;
 		}
 
-		//if no value, return
+		//IF NO VALUE, RETURN
 		if (is_null($value)) return $value;
 
-		//strip slashes if magic quotes are enabled
+		//STRIP SLASHES IF MAGIC QUOTES ARE ENABLED
 		if (get_magic_quotes_gpc()) {
 			$value = stripslashes($value);
 		}
 
-		//convert non breaking space character
+		//CONVERT NON BREAKING SPACE CHARACTER
 		if (($flags & _GETVAR_BREAK) == 0) {
 			$value = str_replace("\xC2\xA0", ' ', $value);
 		}
 
-		//trim the value
+		//TRIM THE VALUE
 		if (($flags & _GETVAR_NOTRIM) == 0) {
 			$value = trim($value);
 		}
 
-		//remove currency symbols
+		//REMOVE CURRENCY SYMBOLS
 		if (($flags & _GETVAR_CURRENCY) > 0) {
 			$value = preg_replace('/^[\$\s\x{A2}-\x{A5}\x{20A0}-\x{20CF}\x{10192}]+/u', '', $value);
 		}
 
-		//convert to MD5 checksum (binary)
+		//CONVERT TO MD5 CHECKSUM (BINARY)
 		if (($flags & _GETVAR_MD5BIN) > 0) {
 			$value = md5($value, true);
 		}
 
-		//convert to MD5 checksum
+		//CONVERT TO MD5 CHECKSUM
 		if (($flags & _GETVAR_MD5) > 0) {
 			$value = md5($value);
 		}
 
-		//clean out HTML special characters
+		//CLEAN OUT HTML SPECIAL CHARACTERS
 		if (($flags & _GETVAR_HTMLSAFE) > 0) {
 			$value = htmlspecialchars($value, ENT_QUOTES);
 		}
 
-		//clean out URL paramater special characters
+		//CLEAN OUT URL PARAMATER SPECIAL CHARACTERS
 		if (($flags & _GETVAR_URLSAFE) > 0) {
 			$value = rawurlencode($value);
 		}
 
-		//prevent SQL injection
+		//PREVENT SQL INJECTION
 		if (($flags & _GETVAR_SQLSAFE) > 0) {
 			if (!empty($this->pudl)) {
 				$value = $this->pudl->escape($value);
