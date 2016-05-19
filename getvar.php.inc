@@ -122,6 +122,24 @@ class getvar {
 	}
 
 
+	public function currency($name, $flags=false) {
+		if ($flags === false) $flags = 0;
+		return $this->float($name, $flags | _GETVAR_CURRENCY);
+	}
+
+
+	public function currencyArray($name, $flags=false) {
+		if ($flags === false) $flags = 0;
+		return $this->floatArray($name, $flags | _GETVAR_CURRENCY);
+	}
+
+
+	public function currencyList($name, $flags=false) {
+		if ($flags === false) $flags = 0;
+		return $this->floatList($name, $flags | _GETVAR_CURRENCY);
+	}
+
+
 	public function string($name, $flags=false) {
 		return $this->_utf8((string)$this($name, $flags));
 	}
