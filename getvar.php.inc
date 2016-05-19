@@ -9,6 +9,7 @@ define('_GETVAR_URLSAFE',	1 <<  4);
 define('_GETVAR_NOTRIM',	1 <<  5);
 define('_GETVAR_BREAK',		1 <<  6);
 define('_GETVAR_NULL',		1 <<  7);
+define('_GETVAR_CURRENCY',	1 <<  8);
 define('_GETVAR_MD5BIN',	1 << 29);
 define('_GETVAR_MD5',		1 << 30);
 define('_GETVAR_HTML_SQL',	_GETVAR_SQLSAFE | _GETVAR_HTMLSAFE);
@@ -251,6 +252,11 @@ class getvar {
 		//trim the value
 		if (($flags & _GETVAR_NOTRIM) == 0) {
 			$value = trim($value);
+		}
+
+		//remove currency symbols
+		if (($flags & _GETVAR_CURRENCY) > 0) {
+			$value = preg_replace('/^[\$\s\x{A2}-\x{A5}\x{20A0}-\x{20CF}\x{10192}]+/u', '', $value);
 		}
 
 		//convert to MD5 checksum (binary)
