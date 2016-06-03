@@ -145,8 +145,18 @@ class getvar {
 	}
 
 
+	public function upper($name, $flags=false) {
+		return strtoupper($this->string($name, $flags));
+	}
+
+
 	public function stringUpper($name, $flags=false) {
 		return strtoupper($this->string($name, $flags));
+	}
+
+
+	public function lower($name, $flags=false) {
+		return strtolower($this->string($name, $flags));
 	}
 
 
