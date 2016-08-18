@@ -246,6 +246,10 @@ class getvar {
 	}
 
 
+	public function pudl_getId($column) {
+		return $this($column);
+	}
+
 
 	protected function _utf8($value) {
 		if (mb_detect_encoding($value, 'UTF-8', true)) return $value;
