@@ -246,7 +246,8 @@ class getvar {
 	}
 
 
-	public function pudl_getId($column) {
+	public function pudl_getId($column=true) {
+		if ($column === true) return false;
 		return $this($column);
 	}
 
