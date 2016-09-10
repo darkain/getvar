@@ -15,7 +15,7 @@ define('_GETVAR_MD5',		1 << 30);
 define('_GETVAR_HTML_SQL',	_GETVAR_SQLSAFE | _GETVAR_HTMLSAFE);
 
 
-class getvar {
+class getvar implements ArrayAccess {
 
 	public function __construct($default=_GETVAR_BASIC) {
 		$this->default = $default;
@@ -24,12 +24,12 @@ class getvar {
 
 	public function __invoke($name, $flags=false) {
 		//ATTEMPT TO GET THE VALUE FROM POST
-		if (($flags & _GETVAR_NOPOST) == 0) {
+		if (!($flags & _GETVAR_NOPOST)) {
 			if (isset($_POST[$name])) $value = $_POST[$name];
 		}
 
 		//ATTEMPT TO GET THE VALUE FROM GET
-		if (!isset($value)  &&  (($flags & _GETVAR_NOGET) == 0)) {
+		if (!isset($value)  &&  !($flags & _GETVAR_NOGET)) {
 			if (isset($_GET[$name])) $value = $_GET[$name];
 		}
 
@@ -246,12 +246,6 @@ class getvar {
 	}
 
 
-	public function pudlId($column=true) {
-		if ($column === true) return false;
-		return $this($column);
-	}
-
-
 	protected function _utf8($value) {
 		if (mb_detect_encoding($value, 'UTF-8', true)) return $value;
 		return utf8_encode($value);
@@ -325,7 +319,59 @@ class getvar {
 	}
 
 
+	public function __set($key, $value) {
+		throw new Exception('Cannot set values on class getvar');
+	}
+
+
+	public function offsetSet($key, $value) {
+		throw new Exception('Cannot set values on class getvar');
+	}
+
+
+	public function &__get($key) {
+		return $this($key);
+	}
+
+
+	public function offsetGet($key) {
+		return $this($key);
+	}
+
+
+	public function __isset($key) {
+		if (!($this->default & _GETVAR_NOPOST)) {
+			if (isset($_POST[$key])) return true;
+		}
+		if (!($this->default & _GETVAR_NOGET)) {
+			if (isset($_GET[$key])) return true;
+		}
+		return false;
+	}
+
+
+	public function offsetExists($key) {
+		return isset($this->{$key});
+	}
+
+
+	public function __unset($key) {
+		if (!($this->default & _GETVAR_NOPOST)) {
+			unset($_POST[$key]);
+		}
+		if (!($this->default & _GETVAR_NOGET)) {
+			unset($_GET[$key]);
+		}
+	}
+
+
+	public function offsetUnset($key) {
+		unset($this->{$key});
+	}
+
+
+
 	public			$default;
 	public			$pudl		= NULL;
-	public static	$version	= 'Getvar 2.4.0';
+	public static	$version	= 'Getvar 2.4.1';
 }
