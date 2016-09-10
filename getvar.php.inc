@@ -327,5 +327,5 @@ class getvar {
 
 	public			$default;
 	public			$pudl		= NULL;
-	public static	$version	= 'Getvar 2.3.0';
+	public static	$version	= 'Getvar 2.4.0';
 }
