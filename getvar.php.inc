@@ -192,6 +192,13 @@ class getvar implements ArrayAccess {
 	}
 
 
+	public function password($name='password', $flags=false) {
+		$password = $this($name, $flags);
+		unset($_GET[$name], $_POST[$name], $_REQUEST[$name]);
+		return $password;
+	}
+
+
 	public function bool($name, $flags=false) {
 		$value = $this($name, $flags);
 		if (!strcasecmp($value, 'true'))	return true;
