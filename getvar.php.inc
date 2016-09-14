@@ -168,7 +168,8 @@ class getvar implements ArrayAccess {
 	public function stringNull($name, $flags=false) {
 		if ($flags === false) $flags = $this->default;
 		$value = $this($name, $flags|_GETVAR_NULL);
-		return ($value === NULL) ? NULL : $this->_utf8((string)$value);
+		if ($value === NULL) return NULL;
+		return ($value === '') ? NULL : $this->_utf8((string)$value);
 	}
 
 
