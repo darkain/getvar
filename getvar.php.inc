@@ -55,6 +55,13 @@ class getvar implements ArrayAccess {
 	}
 
 
+	public function sessionClear($name, $default=NULL, $flags=false) {
+		$return = $this->session($name, $default, $flags);
+		unset($_SESSION[$name]);
+		return $return;
+	}
+
+
 	public function item($name, $flags=false) {
 		return $this($name, $flags);
 	}
