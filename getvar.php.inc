@@ -388,5 +388,5 @@ class getvar implements ArrayAccess {
 
 	public			$default;
 	public			$pudl		= NULL;
-	public static	$version	= 'Getvar 2.4.3';
+	public static	$version	= 'Getvar 2.5.0';
 }
