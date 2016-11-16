@@ -7,9 +7,10 @@ define('_GETVAR_SQLSAFE',	1 <<  2);
 define('_GETVAR_HTMLSAFE',	1 <<  3);
 define('_GETVAR_URLSAFE',	1 <<  4);
 define('_GETVAR_NOTRIM',	1 <<  5);
-define('_GETVAR_BREAK',		1 <<  6);
-define('_GETVAR_NULL',		1 <<  7);
-define('_GETVAR_CURRENCY',	1 <<  8);
+define('_GETVAR_NODOUBLE',	1 <<  6);
+define('_GETVAR_BREAK',		1 <<  7);
+define('_GETVAR_NULL',		1 <<  8);
+define('_GETVAR_CURRENCY',	1 <<  9);
 define('_GETVAR_MD5BIN',	1 << 29);
 define('_GETVAR_MD5',		1 << 30);
 define('_GETVAR_HTML_SQL',	_GETVAR_SQLSAFE | _GETVAR_HTMLSAFE);
@@ -329,6 +330,11 @@ class getvar implements ArrayAccess {
 		//TRIM THE VALUE
 		if (($flags & _GETVAR_NOTRIM) == 0) {
 			$value = trim($value);
+		}
+
+		//REMOVE DOUBLE SPACES
+		if (($flags & _GETVAR_NODOUBLE) > 0) {
+			$value = preg_replace('/  +/', ' ', $value);
 		}
 
 		//REMOVE CURRENCY SYMBOLS
