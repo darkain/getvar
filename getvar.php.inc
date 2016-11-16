@@ -220,6 +220,8 @@ class getvar implements ArrayAccess {
 		$value = $this($name, $flags);
 		if (!strcasecmp($value, 'true'))	return true;
 		if (!strcasecmp($value, 'false'))	return false;
+		if (!strcasecmp($value, 'null'))	return false;
+		if (!strcasecmp($value, 'nil'))		return false;
 		return (bool) $value;
 	}
 
