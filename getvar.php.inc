@@ -23,6 +23,8 @@ class getvar implements ArrayAccess {
 
 
 	public function __invoke($name, $flags=false) {
+		if ($flags === false) $flags = $this->default;
+
 		//ATTEMPT TO GET THE VALUE FROM POST
 		if (!($flags & _GETVAR_NOPOST)) {
 			if (isset($_POST[$name])) $value = $_POST[$name];
@@ -40,6 +42,13 @@ class getvar implements ArrayAccess {
 
 		//CLEAN AND RETURN VALUE
 		return $this->_clean($value, $flags);
+	}
+
+
+	public function default($flags=false) {
+		$return = $this->default;
+		if ($flags !== false) $this->default = $flags;
+		return $return;
 	}
 
 
