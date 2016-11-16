@@ -46,7 +46,7 @@ class getvar implements ArrayAccess {
 	}
 
 
-	public function default($flags=false) {
+	public function flags($flags=false) {
 		$return = $this->default;
 		if ($flags !== false) $this->default = $flags;
 		return $return;
