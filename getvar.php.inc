@@ -88,6 +88,7 @@ class getvar implements ArrayAccess {
 
 	public function int($name, $flags=false) {
 		$value = $this($name, $flags);
+		if ($value === NULL) return NULL;
 		if (!strcasecmp($value, 'true')) return 1;
 		return (int) $value;
 	}
@@ -96,20 +97,27 @@ class getvar implements ArrayAccess {
 	public function intArray($name, $flags=false) {
 		$value = $this($name, $flags);
 		if (!is_array($value)) $value = array();
-		foreach ($value as &$item) $item = (int) $item;
+		foreach ($value as &$item) {
+			if ($item === NULL) continue;
+			$item = (int) $item;
+		}
 		return $value;
 	}
 
 
 	public function intList($name, $separator=',', $flags=false) {
 		$value = $this->lists($name, $separator, $flags);
-		foreach ($value as &$item) $item = (int) $item;
+		foreach ($value as &$item) {
+			if ($item === NULL) continue;
+			$item = (int) $item;
+		}
 		return $value;
 	}
 
 
 	public function float($name, $flags=false) {
 		$value = $this($name, $flags);
+		if ($value === NULL) return NULL;
 		if (!strcasecmp($value, 'true')) return 1.0;
 		$value = (float) $value;
 		if (is_nan($value) || is_infinite($value)) return 0.0;
@@ -121,6 +129,7 @@ class getvar implements ArrayAccess {
 		$value = $this($name, $flags);
 		if (!is_array($value)) $value = array();
 		foreach ($value as &$item) {
+			if ($item === NULL) continue;
 			$item = (float) $item;
 			if (is_nan($item) || is_infinite($item)) $item = 0.0;
 		}
@@ -131,6 +140,7 @@ class getvar implements ArrayAccess {
 	public function floatList($name, $separator=',', $flags=false) {
 		$value = $this->lists($name, $separator, $flags);
 		foreach ($value as &$item) {
+			if ($item === NULL) continue;
 			$item = (float) $item;
 			if (is_nan($item) || is_infinite($item)) $item = 0.0;
 		}
@@ -192,14 +202,20 @@ class getvar implements ArrayAccess {
 	public function stringArray($name, $flags=false) {
 		$value = $this($name, $flags);
 		if (!is_array($value)) $value = array();
-		foreach ($value as &$item) $item = $this->_utf8((string)$item);
+		foreach ($value as &$item) {
+			if ($item === NULL) continue;
+			$item = $this->_utf8((string)$item);
+		}
 		return $value;
 	}
 
 
 	public function stringList($name, $separator=',', $flags=false) {
 		$value = $this->lists($name, $separator, $flags);
-		foreach ($value as &$item) $item = $this->_utf8((string)$item);
+		foreach ($value as &$item) {
+			if ($item === NULL) continue;
+			$item = $this->_utf8((string)$item);
+		}
 		return $value;
 	}
 
@@ -218,6 +234,7 @@ class getvar implements ArrayAccess {
 
 	public function bool($name, $flags=false) {
 		$value = $this($name, $flags);
+		if ($value === NULL) return NULL;
 		if (!strcasecmp($value, 'true'))	return true;
 		if (!strcasecmp($value, 'false'))	return false;
 		if (!strcasecmp($value, 'null'))	return false;
@@ -228,8 +245,9 @@ class getvar implements ArrayAccess {
 
 	public function hash($name='hash', $binary=false, $flags=false) {
 		$hash = $this($name, $flags);
-		if (!strlen($hash)) return false;
-		if (!ctype_xdigit($hash)) return false;
+		if ($hash === NULL)			return NULL;
+		if (!strlen($hash))			return false;
+		if (!ctype_xdigit($hash))	return false;
 		return $binary ? hex2bin($hash) : $hash;
 	}
 
@@ -238,6 +256,7 @@ class getvar implements ArrayAccess {
 		$value = $this($name, $flags);
 		if (!is_array($value)) $value = array();
 		foreach ($value as $key => &$hash) {
+			if ($hash === NULL) continue;
 			if (!ctype_xdigit($hash)) {
 				unset($value[$key]);
 			} else if ($binary) {
@@ -250,7 +269,10 @@ class getvar implements ArrayAccess {
 
 	public function hashList($name, $separator=',', $flags=false) {
 		$value = $this->lists($name, $separator, $flags);
-		foreach ($value as $key => $hash) if (!ctype_xdigit($hash)) unset($value[$key]);
+		foreach ($value as $key => $hash) {
+			if ($hash === NULL) continue;
+			if (!ctype_xdigit($hash)) unset($value[$key]);
+		}
 		return $value;
 	}
 
@@ -267,12 +289,14 @@ class getvar implements ArrayAccess {
 
 	public function timestamp($name, $flags=false) {
 		$value = $this($name, $flags);
+		if ($value === NULL) return NULL;
 		if (ctype_digit($value)) return (int) $value;
 		return strtotime($value);
 	}
 
 
 	protected function _utf8($value) {
+		if ($value === NULL) return NULL;
 		if (mb_detect_encoding($value, 'UTF-8', true)) return $value;
 		return utf8_encode($value);
 	}
@@ -290,7 +314,7 @@ class getvar implements ArrayAccess {
 		}
 
 		//IF NO VALUE, RETURN
-		if (is_null($value)) return $value;
+		if ($value === NULL) return $value;
 
 		//STRIP SLASHES IF MAGIC QUOTES ARE ENABLED
 		if (get_magic_quotes_gpc()) {
