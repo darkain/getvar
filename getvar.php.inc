@@ -385,7 +385,7 @@ class getvar implements ArrayAccess {
 	}
 
 
-	public function &__get($key) {
+	public function __get($key) {
 		return $this($key);
 	}
 
