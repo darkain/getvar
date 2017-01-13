@@ -35,7 +35,17 @@ class getvar implements ArrayAccess {
 		//ATTEMPT TO GET THE VALUE FROM POST
 		if (!($flags & _GETVAR_NOPOST)) {
 			if (is_bool($name)) return $this->post($name);
-			if (isset($_POST[$name])) $value = $_POST[$name];
+
+			if ($this->type() === 'application/json') {
+				$names = explode('/', $name);
+				$value = $this->post(true);
+				foreach ($names as $item) {
+					$value = isset($value[$item]) ? $value[$item] : NULL;
+				}
+
+			} else if (isset($_POST[$name])) {
+				$value = $_POST[$name];
+			}
 		}
 
 		//ATTEMPT TO GET THE VALUE FROM GET
