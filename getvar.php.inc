@@ -29,16 +29,18 @@ class getvar implements ArrayAccess {
 
 
 
-	public function __invoke($name, $flags=false) {
+	public function __invoke($name=false, $flags=false) {
 		if ($flags === false) $flags = $this->default;
 
 		//ATTEMPT TO GET THE VALUE FROM POST
 		if (!($flags & _GETVAR_NOPOST)) {
+			if ($name === false) return $this->post();
 			if (isset($_POST[$name])) $value = $_POST[$name];
 		}
 
 		//ATTEMPT TO GET THE VALUE FROM GET
 		if (!isset($value)  &&  !($flags & _GETVAR_NOGET)) {
+			if ($name === false) return $this->get();
 			if (isset($_GET[$name])) $value = $_GET[$name];
 		}
 
@@ -49,6 +51,27 @@ class getvar implements ArrayAccess {
 
 		//CLEAN AND RETURN VALUE
 		return $this->_clean($value, $flags);
+	}
+
+
+
+
+	public function post() {
+		if ($this->rawpost === NULL) {
+			$this->rawpost = file_get_contents('php://input');
+		}
+		return $this->rawpost;
+
+	}
+
+
+
+
+	public function get() {
+		if ($this->rawget === NULL) {
+			$this->rawget = $this->server('QUERY_STRING', false);
+		}
+		return $this->rawget;
 	}
 
 
@@ -519,6 +542,8 @@ class getvar implements ArrayAccess {
 
 	public			$default;
 	public			$pudl		= NULL;
+	private			$rawget		= NULL;
+	private			$rawpost	= NULL;
 	public static	$version	= 'Getvar 2.7.0';
 
 }
