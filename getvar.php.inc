@@ -1,5 +1,6 @@
 <?php
 
+
 define('_GETVAR_BASIC',		0 <<  0);
 define('_GETVAR_NOGET',		1 <<  0);
 define('_GETVAR_NOPOST',	1 <<  1);
@@ -16,11 +17,16 @@ define('_GETVAR_MD5',		1 << 30);
 define('_GETVAR_HTML_SQL',	_GETVAR_SQLSAFE | _GETVAR_HTMLSAFE);
 
 
+
+
 class getvar implements ArrayAccess {
+
 
 	public function __construct($default=_GETVAR_BASIC) {
 		$this->default = $default;
 	}
+
+
 
 
 	public function __invoke($name, $flags=false) {
@@ -46,11 +52,15 @@ class getvar implements ArrayAccess {
 	}
 
 
+
+
 	public function flags($flags=false) {
 		$return = $this->default;
 		if ($flags !== false) $this->default = $flags;
 		return $return;
 	}
+
+
 
 
 	public function server($name, $default=NULL, $flags=false) {
@@ -59,10 +69,14 @@ class getvar implements ArrayAccess {
 	}
 
 
+
+
 	public function session($name, $default=NULL, $flags=false) {
 		if (!isset($_SESSION[$name])) return $default;
 		return $this->_clean($_SESSION[$name], $flags);
 	}
+
+
 
 
 	public function sessionClear($name, $default=NULL, $flags=false) {
@@ -72,9 +86,13 @@ class getvar implements ArrayAccess {
 	}
 
 
+
+
 	public function item($name, $flags=false) {
 		return $this($name, $flags);
 	}
+
+
 
 
 	public function lists($name, $separator=',', $flags=false) {
@@ -87,12 +105,16 @@ class getvar implements ArrayAccess {
 	}
 
 
+
+
 	public function int($name, $flags=false) {
 		$value = $this($name, $flags);
 		if ($value === NULL) return NULL;
 		if (!strcasecmp($value, 'true')) return 1;
 		return (int) $value;
 	}
+
+
 
 
 	public function intArray($name, $flags=false) {
@@ -106,6 +128,8 @@ class getvar implements ArrayAccess {
 	}
 
 
+
+
 	public function intList($name, $separator=',', $flags=false) {
 		$value = $this->lists($name, $separator, $flags);
 		foreach ($value as &$item) {
@@ -116,6 +140,8 @@ class getvar implements ArrayAccess {
 	}
 
 
+
+
 	public function float($name, $flags=false) {
 		$value = $this($name, $flags);
 		if ($value === NULL) return NULL;
@@ -124,6 +150,8 @@ class getvar implements ArrayAccess {
 		if (is_nan($value) || is_infinite($value)) return 0.0;
 		return $value;
 	}
+
+
 
 
 	public function floatArray($name, $flags=false) {
@@ -138,6 +166,8 @@ class getvar implements ArrayAccess {
 	}
 
 
+
+
 	public function floatList($name, $separator=',', $flags=false) {
 		$value = $this->lists($name, $separator, $flags);
 		foreach ($value as &$item) {
@@ -149,10 +179,14 @@ class getvar implements ArrayAccess {
 	}
 
 
+
+
 	public function currency($name, $flags=false) {
 		if ($flags === false) $flags = 0;
 		return $this->float($name, $flags | _GETVAR_CURRENCY);
 	}
+
+
 
 
 	public function currencyArray($name, $flags=false) {
@@ -161,10 +195,14 @@ class getvar implements ArrayAccess {
 	}
 
 
+
+
 	public function currencyList($name, $flags=false) {
 		if ($flags === false) $flags = 0;
 		return $this->floatList($name, $flags | _GETVAR_CURRENCY);
 	}
+
+
 
 
 	public function string($name, $flags=false) {
@@ -172,9 +210,13 @@ class getvar implements ArrayAccess {
 	}
 
 
+
+
 	public function upper($name, $flags=false) {
 		return strtoupper($this->string($name, $flags));
 	}
+
+
 
 
 	public function stringUpper($name, $flags=false) {
@@ -182,14 +224,20 @@ class getvar implements ArrayAccess {
 	}
 
 
+
+
 	public function lower($name, $flags=false) {
 		return strtolower($this->string($name, $flags));
 	}
 
 
+
+
 	public function stringLower($name, $flags=false) {
 		return strtolower($this->string($name, $flags));
 	}
+
+
 
 
 	public function stringNull($name, $flags=false) {
@@ -198,6 +246,8 @@ class getvar implements ArrayAccess {
 		if ($value === NULL) return NULL;
 		return ($value === '') ? NULL : $this->_utf8((string)$value);
 	}
+
+
 
 
 	public function stringArray($name, $flags=false) {
@@ -211,6 +261,8 @@ class getvar implements ArrayAccess {
 	}
 
 
+
+
 	public function stringList($name, $separator=',', $flags=false) {
 		$value = $this->lists($name, $separator, $flags);
 		foreach ($value as &$item) {
@@ -221,9 +273,13 @@ class getvar implements ArrayAccess {
 	}
 
 
+
+
 	public function id($name='id', $flags=false) {
 		return (int) $this($name, $flags);
 	}
+
+
 
 
 	public function password($name='password', $flags=false) {
@@ -231,6 +287,8 @@ class getvar implements ArrayAccess {
 		unset($_GET[$name], $_POST[$name], $_REQUEST[$name]);
 		return $password;
 	}
+
+
 
 
 	public function bool($name, $flags=false) {
@@ -244,6 +302,8 @@ class getvar implements ArrayAccess {
 	}
 
 
+
+
 	public function hash($name='hash', $binary=false, $flags=false) {
 		$hash = $this($name, $flags);
 		if ($hash === NULL)			return NULL;
@@ -251,6 +311,8 @@ class getvar implements ArrayAccess {
 		if (!ctype_xdigit($hash))	return false;
 		return $binary ? hex2bin($hash) : $hash;
 	}
+
+
 
 
 	public function hashArray($name='hash', $binary=false, $flags=false) {
@@ -268,6 +330,8 @@ class getvar implements ArrayAccess {
 	}
 
 
+
+
 	public function hashList($name, $separator=',', $flags=false) {
 		$value = $this->lists($name, $separator, $flags);
 		foreach ($value as $key => $hash) {
@@ -278,14 +342,20 @@ class getvar implements ArrayAccess {
 	}
 
 
+
+
 	public function binary($name='hash', $flags=false) {
 		return $this->hash($name, true, $flags);
 	}
 
 
+
+
 	public function binaryArray($name='hash', $flags=false) {
 		return $this->hashArray($name, true, $flags);
 	}
+
+
 
 
 	public function timestamp($name, $flags=false) {
@@ -296,11 +366,14 @@ class getvar implements ArrayAccess {
 	}
 
 
+
+
 	protected function _utf8($value) {
 		if ($value === NULL) return NULL;
 		if (mb_detect_encoding($value, 'UTF-8', true)) return $value;
 		return utf8_encode($value);
 	}
+
 
 
 
@@ -375,9 +448,13 @@ class getvar implements ArrayAccess {
 	}
 
 
+
+
 	public function __set($key, $value) {
 		throw new Exception('Cannot set values on class getvar');
 	}
+
+
 
 
 	public function offsetSet($key, $value) {
@@ -385,14 +462,20 @@ class getvar implements ArrayAccess {
 	}
 
 
+
+
 	public function __get($key) {
 		return $this($key);
 	}
 
 
+
+
 	public function offsetGet($key) {
 		return $this($key);
 	}
+
+
 
 
 	public function __isset($key) {
@@ -406,9 +489,13 @@ class getvar implements ArrayAccess {
 	}
 
 
+
+
 	public function offsetExists($key) {
 		return isset($this->{$key});
 	}
+
+
 
 
 	public function __unset($key) {
@@ -421,13 +508,17 @@ class getvar implements ArrayAccess {
 	}
 
 
+
+
 	public function offsetUnset($key) {
 		unset($this->{$key});
 	}
 
 
 
+
 	public			$default;
 	public			$pudl		= NULL;
-	public static	$version	= 'Getvar 2.6.0';
+	public static	$version	= 'Getvar 2.7.0';
+
 }
