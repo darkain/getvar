@@ -34,7 +34,7 @@ class getvar implements ArrayAccess {
 
 		//ATTEMPT TO GET THE VALUE FROM POST
 		if (!($flags & _GETVAR_NOPOST)) {
-			if ($name === false) return $this->post();
+			if (is_bool($name)) return $this->post($name);
 			if (isset($_POST[$name])) $value = $_POST[$name];
 		}
 
@@ -56,22 +56,41 @@ class getvar implements ArrayAccess {
 
 
 
-	public function post() {
-		if ($this->rawpost === NULL) {
-			$this->rawpost = file_get_contents('php://input');
-		}
-		return $this->rawpost;
-
-	}
-
-
-
-
 	public function get() {
 		if ($this->rawget === NULL) {
 			$this->rawget = $this->server('QUERY_STRING', false);
 		}
 		return $this->rawget;
+	}
+
+
+
+
+	public function post($object=false) {
+		if ($this->rawpost === NULL) {
+			$this->rawpost = @file_get_contents('php://input');
+		}
+		if (!$object) return $this->rawpost;
+
+		if ($this->rawjson === NULL) {
+			$this->rawjson = @json_decode(
+				$this->rawpost,
+				true,
+				512,
+				JSON_BIGINT_AS_STRING
+			);
+		}
+		return $this->rawjson;
+	}
+
+
+
+
+	public function type() {
+		if ($this->type === NULL) {
+			$this->type = $this->server('CONTENT_TYPE');
+		}
+		return $this->type;
 	}
 
 
@@ -544,6 +563,8 @@ class getvar implements ArrayAccess {
 	public			$pudl		= NULL;
 	private			$rawget		= NULL;
 	private			$rawpost	= NULL;
+	private			$rawjson	= NULL;
+	private			$type		= NULL;
 	public static	$version	= 'Getvar 2.7.0';
 
 }
