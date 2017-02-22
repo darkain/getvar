@@ -174,6 +174,7 @@ class getvar implements ArrayAccess {
 		if (!is_array($value)) $value = array();
 		foreach ($value as &$item) {
 			if ($item === NULL) continue;
+			if (!strcasecmp($item, 'true')) $item = 1;
 			$item = (int) $item;
 		}
 		return $value;
@@ -186,6 +187,7 @@ class getvar implements ArrayAccess {
 		$value = $this->lists($name, $separator, $flags);
 		foreach ($value as &$item) {
 			if ($item === NULL) continue;
+			if (!strcasecmp($item, 'true')) $item = 1;
 			$item = (int) $item;
 		}
 		return $value;
@@ -211,6 +213,7 @@ class getvar implements ArrayAccess {
 		if (!is_array($value)) $value = array();
 		foreach ($value as &$item) {
 			if ($item === NULL) continue;
+			if (!strcasecmp($item, 'true')) $item = 1.0;
 			$item = (float) $item;
 			if (is_nan($item) || is_infinite($item)) $item = 0.0;
 		}
@@ -224,6 +227,7 @@ class getvar implements ArrayAccess {
 		$value = $this->lists($name, $separator, $flags);
 		foreach ($value as &$item) {
 			if ($item === NULL) continue;
+			if (!strcasecmp($item, 'true')) $item = 1.0;
 			$item = (float) $item;
 			if (is_nan($item) || is_infinite($item)) $item = 0.0;
 		}
