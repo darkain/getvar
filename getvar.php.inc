@@ -55,7 +55,7 @@ class getvar implements ArrayAccess {
 		}
 
 		//VALUE NOT FOUND
-		if (!isset($value)) {
+		if (!isset($value)  ||  $value === '') {
 			return ($flags & _GETVAR_NULL) ? NULL : '';
 		}
 
@@ -169,6 +169,14 @@ class getvar implements ArrayAccess {
 
 
 
+	public function intNull($name, $flags=false) {
+		if ($flags === false) $flags = $this->default;
+		return $this->int($name, $flags|_GETVAR_NULL);
+	}
+
+
+
+
 	public function intArray($name, $flags=false) {
 		$value = $this($name, $flags);
 		if (!is_array($value)) $value = array();
@@ -203,6 +211,14 @@ class getvar implements ArrayAccess {
 		$value = (float) $value;
 		if (is_nan($value) || is_infinite($value)) return 0.0;
 		return $value;
+	}
+
+
+
+
+	public function floatNull($name, $flags=false) {
+		if ($flags === false) $flags = $this->default;
+		return $this->float($name, $flags|_GETVAR_NULL);
 	}
 
 
