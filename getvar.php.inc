@@ -443,13 +443,9 @@ class getvar implements ArrayAccess {
 	protected function _utf8($value) {
 		if ($value === NULL) return NULL;
 
-		if (extension_loaded('mbstring')) {
-			if (mb_detect_encoding($value, 'UTF-8', true)) {
-				return $value;
-			}
-		}
-
-		return iconv('ISO-8859-1', 'UTF-8//TRANSLIT', $value);
+		return extension_loaded('mbstring')
+				? mb_convert_encoding($value, 'UTF-8', 'UTF-8')
+				: iconv('UTF-8', 'UTF-8//TRANSLIT', $value);
 	}
 
 
