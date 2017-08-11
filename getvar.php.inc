@@ -4,7 +4,6 @@
 define('_GETVAR_BASIC',		0 <<  0);
 define('_GETVAR_NOGET',		1 <<  0);
 define('_GETVAR_NOPOST',	1 <<  1);
-define('_GETVAR_SQLSAFE',	1 <<  2);
 define('_GETVAR_HTMLSAFE',	1 <<  3);
 define('_GETVAR_URLSAFE',	1 <<  4);
 define('_GETVAR_NOTRIM',	1 <<  5);
@@ -12,9 +11,6 @@ define('_GETVAR_NODOUBLE',	1 <<  6);
 define('_GETVAR_BREAK',		1 <<  7);
 define('_GETVAR_NULL',		1 <<  8);
 define('_GETVAR_CURRENCY',	1 <<  9);
-define('_GETVAR_MD5BIN',	1 << 29);
-define('_GETVAR_MD5',		1 << 30);
-define('_GETVAR_HTML_SQL',	_GETVAR_SQLSAFE | _GETVAR_HTMLSAFE);
 
 
 
@@ -464,11 +460,6 @@ class getvar implements ArrayAccess {
 		//IF NO VALUE, RETURN
 		if ($value === NULL) return $value;
 
-		//STRIP SLASHES IF MAGIC QUOTES ARE ENABLED
-		if (get_magic_quotes_gpc()) {
-			$value = stripslashes($value);
-		}
-
 		//CONVERT NON BREAKING SPACE CHARACTER
 		if (($flags & _GETVAR_BREAK) == 0) {
 			$value = str_replace("\xC2\xA0", ' ', $value);
@@ -489,16 +480,6 @@ class getvar implements ArrayAccess {
 			$value = preg_replace('/^[\$\s\x{A2}-\x{A5}\x{20A0}-\x{20CF}\x{10192}]+/u', '', $value);
 		}
 
-		//CONVERT TO MD5 CHECKSUM (BINARY)
-		if (($flags & _GETVAR_MD5BIN) > 0) {
-			$value = md5($value, true);
-		}
-
-		//CONVERT TO MD5 CHECKSUM
-		if (($flags & _GETVAR_MD5) > 0) {
-			$value = md5($value);
-		}
-
 		//CLEAN OUT HTML SPECIAL CHARACTERS
 		if (($flags & _GETVAR_HTMLSAFE) > 0) {
 			$value = htmlspecialchars($value, ENT_QUOTES);
@@ -507,15 +488,6 @@ class getvar implements ArrayAccess {
 		//CLEAN OUT URL PARAMATER SPECIAL CHARACTERS
 		if (($flags & _GETVAR_URLSAFE) > 0) {
 			$value = rawurlencode($value);
-		}
-
-		//PREVENT SQL INJECTION
-		if (($flags & _GETVAR_SQLSAFE) > 0) {
-			if (!empty($this->pudl)) {
-				$value = $this->pudl->escape($value);
-			} else {
-				$value = @mysql_real_escape_string($value);
-			}
 		}
 
 		return $value;
@@ -592,11 +564,10 @@ class getvar implements ArrayAccess {
 
 
 	public			$default;
-	public			$pudl		= NULL;
 	private			$rawget		= NULL;
 	private			$rawpost	= NULL;
 	private			$rawjson	= NULL;
 	private			$type		= NULL;
-	public static	$version	= 'Getvar 2.8.0';
+	public static	$version	= 'Getvar 2.8.2';
 
 }
