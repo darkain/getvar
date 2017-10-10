@@ -257,6 +257,14 @@ class getvar implements ArrayAccess {
 
 
 
+	public function currencyNull($name, $flags=false) {
+		if ($flags === false) $flags = 0;
+		return $this->float($name, $flags | _GETVAR_CURRENCY | _GETVAR_NULL);
+	}
+
+
+
+
 	public function currencyArray($name, $flags=false) {
 		if ($flags === false) $flags = 0;
 		return $this->floatArray($name, $flags | _GETVAR_CURRENCY);
