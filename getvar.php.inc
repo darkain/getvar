@@ -25,11 +25,19 @@ class getvar implements ArrayAccess {
 
 
 
-	public function __invoke($name=false, $flags=false) {
+	public function __invoke($name=false, $flags=false, $recurse=false) {
 		if ($flags === false) $flags = $this->default;
 
+		//RECURSIVE SEARCH
+		if (is_array($name)) {
+			foreach ($name as $item) {
+				$value = $this($item, $flags, true);
+				if (!is_null($value)) break;
+			}
+		}
+
 		//ATTEMPT TO GET THE VALUE FROM POST
-		if (!($flags & _GETVAR_NOPOST)) {
+		if (!isset($value)  &&  !($flags & _GETVAR_NOPOST)) {
 			if (is_bool($name)) return $this->post($name);
 
 			if ($this->type() === 'application/json') {
@@ -50,8 +58,11 @@ class getvar implements ArrayAccess {
 			if (isset($_GET[$name])) $value = $_GET[$name];
 		}
 
+		//HANDLE RECURSIVE SEARCHING
+		if (!isset($value)  &&  $recurse) return NULL;
+
 		//VALUE NOT FOUND
-		if (!isset($value)  ||  $value === '') {
+		if (!isset($value)  ||  is_null($value)  ||  $value === '') {
 			return ($flags & _GETVAR_NULL) ? NULL : '';
 		}
 
