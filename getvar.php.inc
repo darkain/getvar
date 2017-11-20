@@ -29,7 +29,7 @@ class getvar implements ArrayAccess {
 		if ($flags === false) $flags = $this->default;
 
 		//RECURSIVE SEARCH
-		if (is_array($name)) {
+		if (is_array($name)  ||  is_object($name)) {
 			foreach ($name as $item) {
 				$value = $this($item, $flags, true);
 				if (!is_null($value)) break;
