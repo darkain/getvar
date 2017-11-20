@@ -34,6 +34,7 @@ class getvar implements ArrayAccess {
 				$value = $this($item, $flags, true);
 				if (!is_null($value)) break;
 			}
+			$name = 0;
 		}
 
 		//ATTEMPT TO GET THE VALUE FROM POST
