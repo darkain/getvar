@@ -55,7 +55,7 @@ $z = $get->float('z');			//returns 0.0 (float)
 
 ### Automatic Trimming
 In our testing and production environments, we've found that in 95-99% of our
-usage cases, we want to trim whitespace from value before converting or
+usage cases, we want to trim the whitespace from a value before converting or
 returning it. It is extremely common for users to have extra white space on
 either end of their user input, especially when copying and pasting information
 from other web pages or documents. The default behavior of GetVar is to trim
