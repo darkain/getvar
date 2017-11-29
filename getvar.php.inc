@@ -372,7 +372,7 @@ class getvar implements ArrayAccess {
 
 	public function password($name='password', $flags=false) {
 		$password = $this($name, $flags);
-		unset($_GET[$name], $_POST[$name], $_REQUEST[$name]);
+		unset($this->{$name});
 		return $password;
 	}
 
@@ -548,9 +548,11 @@ class getvar implements ArrayAccess {
 		if (!($this->default & _GETVAR_NOPOST)) {
 			if (isset($_POST[$key])) return true;
 		}
+
 		if (!($this->default & _GETVAR_NOGET)) {
 			if (isset($_GET[$key])) return true;
 		}
+
 		return false;
 	}
 
