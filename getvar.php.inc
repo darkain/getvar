@@ -568,9 +568,12 @@ class getvar implements ArrayAccess {
 		if (!($this->default & _GETVAR_NOPOST)) {
 			unset($_POST[$key]);
 		}
+
 		if (!($this->default & _GETVAR_NOGET)) {
 			unset($_GET[$key]);
 		}
+
+		unset($_REQUEST[$key]);
 	}
 
 
