@@ -363,6 +363,14 @@ class getvar implements ArrayAccess {
 
 
 
+	public function json($name, $flags=false) {
+		$json = $this($name, $flags);
+		return @json_decode($json, true, 512, JSON_BIGINT_AS_STRING);
+	}
+
+
+
+
 	public function id($name='id', $flags=false) {
 		return (int) $this($name, $flags);
 	}
