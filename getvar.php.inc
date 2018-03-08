@@ -351,6 +351,20 @@ class getvar implements ArrayAccess {
 
 
 
+	public function combine($key, $value, $flags=false) {
+		$keys	= $this->stringArray($key,		$flags);
+		$values	= $this->stringArray($value,	$flags);
+		$return	= [];
+		foreach ($keys as $id => $item) {
+			if ($item === ''  ||  $item === NULL) continue;
+			$return[$item] = isset($values[$id]) ? $values[$id] : '';
+		}
+		return $return;
+	}
+
+
+
+
 	public function stringList($name, $separator=',', $flags=false) {
 		$value = $this->lists($name, $separator, $flags);
 		foreach ($value as &$item) {
