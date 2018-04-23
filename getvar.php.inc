@@ -19,14 +19,14 @@ class getvar implements ArrayAccess {
 
 
 	public function __construct($default=_GETVAR_BASIC) {
-		$this->default = $default;
+		$this->_default = $default;
 	}
 
 
 
 
 	public function __invoke($name=false, $flags=false, $recurse=false) {
-		if ($flags === false) $flags = $this->default;
+		if ($flags === false) $flags = $this->_default;
 
 		//RECURSIVE SEARCH
 		if (is_array($name)  ||  is_object($name)) {
@@ -75,48 +75,48 @@ class getvar implements ArrayAccess {
 
 
 	public function get() {
-		if ($this->rawget === NULL) {
-			$this->rawget = $this->server('QUERY_STRING', false);
+		if ($this->_rawget === NULL) {
+			$this->_rawget = $this->server('QUERY_STRING', false);
 		}
-		return $this->rawget;
+		return $this->_rawget;
 	}
 
 
 
 
 	public function post($object=false) {
-		if ($this->rawpost === NULL) {
-			$this->rawpost = @file_get_contents('php://input');
+		if ($this->_rawpost === NULL) {
+			$this->_rawpost = @file_get_contents('php://input');
 		}
-		if (!$object) return $this->rawpost;
+		if (!$object) return $this->_rawpost;
 
-		if ($this->rawjson === NULL) {
-			$this->rawjson = @json_decode(
-				$this->rawpost,
+		if ($this->_rawjson === NULL) {
+			$this->_rawjson = @json_decode(
+				$this->_rawpost,
 				true,
 				512,
 				JSON_BIGINT_AS_STRING
 			);
 		}
-		return $this->rawjson;
+		return $this->_rawjson;
 	}
 
 
 
 
 	public function type() {
-		if ($this->type === NULL) {
-			$this->type = $this->server('CONTENT_TYPE');
+		if ($this->_type === NULL) {
+			$this->_type = $this->server('CONTENT_TYPE');
 		}
-		return $this->type;
+		return $this->_type;
 	}
 
 
 
 
 	public function flags($flags=false) {
-		$return = $this->default;
-		if ($flags !== false) $this->default = $flags;
+		$return = $this->_default;
+		if ($flags !== false) $this->_default = $flags;
 		return $return;
 	}
 
@@ -178,7 +178,7 @@ class getvar implements ArrayAccess {
 
 
 	public function intNull($name, $flags=false) {
-		if ($flags === false) $flags = $this->default;
+		if ($flags === false) $flags = $this->_default;
 		return $this->int($name, $flags|_GETVAR_NULL);
 	}
 
@@ -225,7 +225,7 @@ class getvar implements ArrayAccess {
 
 
 	public function floatNull($name, $flags=false) {
-		if ($flags === false) $flags = $this->default;
+		if ($flags === false) $flags = $this->_default;
 		return $this->float($name, $flags|_GETVAR_NULL);
 	}
 
@@ -329,7 +329,7 @@ class getvar implements ArrayAccess {
 
 
 	public function stringNull($name, $flags=false) {
-		if ($flags === false) $flags = $this->default;
+		if ($flags === false) $flags = $this->_default;
 		$value = $this($name, $flags|_GETVAR_NULL);
 		if ($value === NULL) return NULL;
 		return ($value === '') ? NULL : $this->_utf8((string)$value);
@@ -490,7 +490,7 @@ class getvar implements ArrayAccess {
 
 
 	protected function _clean($value, $flags=false) {
-		if ($flags === false) $flags = $this->default;
+		if ($flags === false) $flags = $this->_default;
 
 		if (is_array($value)) {
 			foreach ($value as &$item) {
@@ -567,11 +567,11 @@ class getvar implements ArrayAccess {
 
 
 	public function __isset($key) {
-		if (!($this->default & _GETVAR_NOPOST)) {
+		if (!($this->_default & _GETVAR_NOPOST)) {
 			if (isset($_POST[$key])) return true;
 		}
 
-		if (!($this->default & _GETVAR_NOGET)) {
+		if (!($this->_default & _GETVAR_NOGET)) {
 			if (isset($_GET[$key])) return true;
 		}
 
@@ -589,11 +589,11 @@ class getvar implements ArrayAccess {
 
 
 	public function __unset($key) {
-		if (!($this->default & _GETVAR_NOPOST)) {
+		if (!($this->_default & _GETVAR_NOPOST)) {
 			unset($_POST[$key]);
 		}
 
-		if (!($this->default & _GETVAR_NOGET)) {
+		if (!($this->_default & _GETVAR_NOGET)) {
 			unset($_GET[$key]);
 		}
 
@@ -610,11 +610,11 @@ class getvar implements ArrayAccess {
 
 
 
-	public			$default;
-	private			$rawget		= NULL;
-	private			$rawpost	= NULL;
-	private			$rawjson	= NULL;
-	private			$type		= NULL;
+	public			$_default;
+	private			$_rawget	= NULL;
+	private			$_rawpost	= NULL;
+	private			$_rawjson	= NULL;
+	private			$_type		= NULL;
 	public static	$version	= 'Getvar 2.8.3';
 
 }
