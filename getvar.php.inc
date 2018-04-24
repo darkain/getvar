@@ -124,7 +124,7 @@ class getvar implements ArrayAccess {
 
 
 	public function server($name, $default=NULL, $flags=false) {
-		if (!isset($_SERVER[$name])) return $default;
+		if (!array_key_exists($name, $_SERVER)) return $default;
 		return $this->_clean($_SERVER[$name], $flags);
 	}
 
@@ -132,7 +132,7 @@ class getvar implements ArrayAccess {
 
 
 	public function session($name, $default=NULL, $flags=false) {
-		if (!isset($_SESSION[$name])) return $default;
+		if (!array_key_exists($name, $_SESSION)) return $default;
 		return $this->_clean($_SESSION[$name], $flags);
 	}
 
