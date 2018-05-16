@@ -10,6 +10,9 @@ require_once(__DIR__.'/defines.inc.php');
 class getvar implements ArrayAccess {
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// CONSTRUCTOR - OPTIONALLY SET THE DEFAULT FLAGS
+	////////////////////////////////////////////////////////////////////////////
 	public function __construct($default=_GETVAR_BASIC) {
 		$this->_default = $default;
 	}
@@ -17,6 +20,13 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// PHP MAGIC METHOD - INVOKE
+	// IF NO PARAMETERS SPECIFIED, GET EITHER THE ENTIRE $_GET OR $_POST DATA
+	// IF NAME IS SPECIFIED, GET THAT PARTICULAR KEY FROM $_GET OR $_POST DATA
+	// $FLAGS - OPTIONAL - HOW TO PROCESS THE DATA BEFORE RETURNING
+	// $RECURSE - OPTIONAL - SEARCH RECURSIVELY FOR VALUE
+	////////////////////////////////////////////////////////////////////////////
 	public function __invoke($name=false, $flags=false, $recurse=false) {
 		if ($flags === false) $flags = $this->_default;
 
@@ -66,6 +76,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// RETURN THE RAW QUERY STRING SENT BY CLIENT
+	////////////////////////////////////////////////////////////////////////////
 	public function get() {
 		if ($this->_rawget === NULL) {
 			$this->_rawget = $this->server('QUERY_STRING', false);
@@ -76,6 +89,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// RETURN THE RAW POST FORM DATA SENT BY CLIENT
+	////////////////////////////////////////////////////////////////////////////
 	public function post($object=false) {
 		if ($this->_rawpost === NULL) {
 			$this->_rawpost = @file_get_contents('php://input');
@@ -96,6 +112,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// RETURN THE CONTENT_TYPE HEADER SEND BY CLIENT
+	////////////////////////////////////////////////////////////////////////////
 	public function type() {
 		if ($this->_type === NULL) {
 			$this->_type = $this->server('CONTENT_TYPE');
@@ -106,6 +125,10 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// RETURNS THE CURRENT DEFAULT FLAGS
+	// $FLAGS - OPTIONAL - SETS NEW DEFAULT FLAGS
+	////////////////////////////////////////////////////////////////////////////
 	public function flags($flags=false) {
 		$return = $this->_default;
 		if ($flags !== false) $this->_default = $flags;
@@ -115,6 +138,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// RETURNS A VALUE BY $NAME FROM THE $_SERVER SUPERGLOBAL
+	////////////////////////////////////////////////////////////////////////////
 	public function server($name, $default=NULL, $flags=false) {
 		if (!array_key_exists($name, $_SERVER)) return $default;
 		return $this->_clean($_SERVER[$name], $flags);
@@ -123,6 +149,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// RETURNS A VALUE BY $NAME FROM THE $_SESSION SUPERGLOBAL
+	////////////////////////////////////////////////////////////////////////////
 	public function session($name, $default=NULL, $flags=false) {
 		if (!array_key_exists($name, $_SESSION)) return $default;
 		return $this->_clean($_SESSION[$name], $flags);
@@ -131,6 +160,10 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// RETURNS A VALUE BY $NAME FROM THE $_SESSION SUPERGLOBAL
+	// ADDITIONALLY, THE VALUE IS REMOVED FROM THE $_SESSION SUPERGLOBAL
+	////////////////////////////////////////////////////////////////////////////
 	public function sessionClear($name, $default=NULL, $flags=false) {
 		$return = $this->session($name, $default, $flags);
 		unset($_SESSION[$name]);
@@ -140,6 +173,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// LEGACY METHOD - ALIAS OF INVOKE
+	////////////////////////////////////////////////////////////////////////////
 	public function item($name, $flags=false) {
 		return $this($name, $flags);
 	}
@@ -147,6 +183,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// RETURNS AN ARRAY FROM A VALUE BY $NAME, EXPLODED ON $SEPARATOR
+	////////////////////////////////////////////////////////////////////////////
 	public function lists($name, $separator=',', $flags=false) {
 		$value = explode($separator, $this($name, $flags));
 		foreach ($value as $key => &$item) {
@@ -159,16 +198,31 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// RETURN AN INTEGER VALUE BY $NAME
+	////////////////////////////////////////////////////////////////////////////
 	public function int($name, $flags=false) {
 		$value = $this($name, $flags);
 		if ($value === NULL) return NULL;
-		if (!strcasecmp($value, 'true')) return 1;
+
+		//	BOOLEAN [TRUE] AS STRING
+		if (!strcasecmp($value, 'true'))	return 1;
+
+		//	SOME FORM ITEMS PASS 'ON' WHEN VALUE TRUE
+		if (!strcasecmp($value, 'on'))		return 1;
+
+		//	SOME FRAMEWORKS PASS 'OK' WHEN VALUE IS TRUE
+		if (!strcasecmp($value, 'ok'))		return 1;
+
 		return (int) $value;
 	}
 
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// SAME AS INT(), BUT RETURNS NULL INSTEAD OF 0 ON MISSING/BAD VALUES
+	////////////////////////////////////////////////////////////////////////////
 	public function intNull($name, $flags=false) {
 		if ($flags === false) $flags = $this->_default;
 		return $this->int($name, $flags|_GETVAR_NULL);
@@ -177,9 +231,12 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// RETURN AN ARRAY OF INTEGERS PASSED WITH THE SAME NAME FROM CLIENT
+	////////////////////////////////////////////////////////////////////////////
 	public function intArray($name, $flags=false) {
 		$value = $this($name, $flags);
-		if (!is_array($value)) $value = array();
+		if (!is_array($value)) $value = [];
 		foreach ($value as &$item) {
 			if ($item === NULL) continue;
 			if (!strcasecmp($item, 'true')) $item = 1;
@@ -191,6 +248,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// RETURNS AN INTEGER ARRAY FROM A VALUE BY $NAME, EXPLODED ON $SEPARATOR
+	////////////////////////////////////////////////////////////////////////////
 	public function intList($name, $separator=',', $flags=false) {
 		$value = $this->lists($name, $separator, $flags);
 		foreach ($value as &$item) {
@@ -204,18 +264,47 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// GET AN INTEGER ID, 0 IF NOT FOUND OR IMPROPER TYPE
+	////////////////////////////////////////////////////////////////////////////
+	public function id($name='id', $flags=false) {
+		return (int) $this($name, $flags);
+	}
+
+
+
+
+	////////////////////////////////////////////////////////////////////////////
+	// RETURN AN INTEGER VALUE BY $NAME
+	////////////////////////////////////////////////////////////////////////////
 	public function float($name, $flags=false) {
 		$value = $this($name, $flags);
 		if ($value === NULL) return NULL;
-		if (!strcasecmp($value, 'true')) return 1.0;
+
+		//	BOOLEAN [TRUE] AS STRING
+		if (!strcasecmp($value, 'true'))	return 1.0;
+
+		//	SOME FORM ITEMS PASS 'ON' WHEN VALUE TRUE
+		if (!strcasecmp($value, 'on'))		return 1.0;
+
+		//	SOME FRAMEWORKS PASS 'OK' WHEN VALUE IS TRUE
+		if (!strcasecmp($value, 'ok'))		return 1.0;
+
+		//	CONVERT VALUE FROM STRING TO FLOAT
 		$value = (float) $value;
+
+		//	FIX FOR A BUG IN EARLY VERSIONS OF PHP 7.0
 		if (is_nan($value) || is_infinite($value)) return 0.0;
+
 		return $value;
 	}
 
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// SAME AS FLOAT(), BUT RETURNS NULL INSTEAD OF 0 ON MISSING/BAD VALUES
+	////////////////////////////////////////////////////////////////////////////
 	public function floatNull($name, $flags=false) {
 		if ($flags === false) $flags = $this->_default;
 		return $this->float($name, $flags|_GETVAR_NULL);
@@ -224,9 +313,12 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// RETURN AN ARRAY OF FLOATS PASSED WITH THE SAME NAME FROM CLIENT
+	////////////////////////////////////////////////////////////////////////////
 	public function floatArray($name, $flags=false) {
 		$value = $this($name, $flags);
-		if (!is_array($value)) $value = array();
+		if (!is_array($value)) $value = [];
 		foreach ($value as &$item) {
 			if ($item === NULL) continue;
 			if (!strcasecmp($item, 'true')) $item = 1.0;
@@ -239,6 +331,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// RETURNS A FLOAT ARRAY FROM A VALUE BY $NAME, EXPLODED ON $SEPARATOR
+	////////////////////////////////////////////////////////////////////////////
 	public function floatList($name, $separator=',', $flags=false) {
 		$value = $this->lists($name, $separator, $flags);
 		foreach ($value as &$item) {
@@ -253,6 +348,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// SAME AS FLOAT(), BUT REMOVES SPACES AND CURRENCY SYMBOLS
+	////////////////////////////////////////////////////////////////////////////
 	public function currency($name, $flags=false) {
 		if ($flags === false) $flags = 0;
 		return $this->float($name, $flags | _GETVAR_CURRENCY);
@@ -261,6 +359,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// SAME AS CURRENCY(), BUT RETURNS NULL ON MISSING/BAD VALUES
+	////////////////////////////////////////////////////////////////////////////
 	public function currencyNull($name, $flags=false) {
 		if ($flags === false) $flags = 0;
 		return $this->float($name, $flags | _GETVAR_CURRENCY | _GETVAR_NULL);
@@ -269,6 +370,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// RETURN AN ARRAY OF CURRENCY VALUES PASSED WITH THE SAME NAME FROM CLIENT
+	////////////////////////////////////////////////////////////////////////////
 	public function currencyArray($name, $flags=false) {
 		if ($flags === false) $flags = 0;
 		return $this->floatArray($name, $flags | _GETVAR_CURRENCY);
@@ -277,6 +381,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// RETURNS A CURRENCY ARRAY FROM A VALUE BY $NAME, EXPLODED ON $SEPARATOR
+	////////////////////////////////////////////////////////////////////////////
 	public function currencyList($name, $flags=false) {
 		if ($flags === false) $flags = 0;
 		return $this->floatList($name, $flags | _GETVAR_CURRENCY);
@@ -285,6 +392,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// SAME AS INVOKE(), BUT FORCES CONVERSION TO UTF-8
+	////////////////////////////////////////////////////////////////////////////
 	public function string($name, $flags=false) {
 		return $this->_utf8((string)$this($name, $flags));
 	}
@@ -292,6 +402,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// SAME AS STRING(), BUT FORCES VALUE TO ALL UPPER-CASE CHARACTERS
+	////////////////////////////////////////////////////////////////////////////
 	public function upper($name, $flags=false) {
 		return strtoupper($this->string($name, $flags));
 	}
@@ -299,6 +412,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// LEGACY METHOD - ALIAS OF UPPER()
+	////////////////////////////////////////////////////////////////////////////
 	public function stringUpper($name, $flags=false) {
 		return strtoupper($this->string($name, $flags));
 	}
@@ -306,6 +422,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// SAME AS STRING(), BUT FORCES VALUE TO ALL LOWER-CASE CHARACTERS
+	////////////////////////////////////////////////////////////////////////////
 	public function lower($name, $flags=false) {
 		return strtolower($this->string($name, $flags));
 	}
@@ -313,6 +432,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// LEGACY METHOD - ALIAS OF LOWER()
+	////////////////////////////////////////////////////////////////////////////
 	public function stringLower($name, $flags=false) {
 		return strtolower($this->string($name, $flags));
 	}
@@ -320,6 +442,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// SAME AS STRING(), BUT RETURNS NULL ON MISSING/BAD VALUES
+	////////////////////////////////////////////////////////////////////////////
 	public function stringNull($name, $flags=false) {
 		if ($flags === false) $flags = $this->_default;
 		$value = $this($name, $flags|_GETVAR_NULL);
@@ -330,9 +455,12 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// RETURN AN ARRAY OF STRINGS PASSED WITH THE SAME NAME FROM CLIENT
+	////////////////////////////////////////////////////////////////////////////
 	public function stringArray($name, $flags=false) {
 		$value = $this($name, $flags);
-		if (!is_array($value)) $value = array();
+		if (!is_array($value)) $value = [];
 		foreach ($value as &$item) {
 			if ($item === NULL) continue;
 			$item = $this->_utf8((string)$item);
@@ -343,6 +471,25 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// RETURNS A STRING ARRAY FROM A VALUE BY $NAME, EXPLODED ON $SEPARATOR
+	////////////////////////////////////////////////////////////////////////////
+	public function stringList($name, $separator=',', $flags=false) {
+		$value = $this->lists($name, $separator, $flags);
+		foreach ($value as &$item) {
+			if ($item === NULL) continue;
+			$item = $this->_utf8((string)$item);
+		}
+		return $value;
+	}
+
+
+
+
+	////////////////////////////////////////////////////////////////////////////
+	// GIVEN A STRINGARRAY $KEY AND STRINGARRAY $VALUE,
+	// COMBINE THEM INTO AN ARRAY
+	////////////////////////////////////////////////////////////////////////////
 	public function combine($key, $value, $flags=false) {
 		$keys	= $this->stringArray($key,		$flags);
 		$values	= $this->stringArray($value,	$flags);
@@ -357,18 +504,9 @@ class getvar implements ArrayAccess {
 
 
 
-	public function stringList($name, $separator=',', $flags=false) {
-		$value = $this->lists($name, $separator, $flags);
-		foreach ($value as &$item) {
-			if ($item === NULL) continue;
-			$item = $this->_utf8((string)$item);
-		}
-		return $value;
-	}
-
-
-
-
+	////////////////////////////////////////////////////////////////////////////
+	// GET A JSON VALUE BY $NAME, AND CONVERT IT TO AN ARRAY
+	////////////////////////////////////////////////////////////////////////////
 	public function json($name, $flags=false) {
 		$json = $this($name, $flags);
 		return @json_decode($json, true, 512, JSON_BIGINT_AS_STRING);
@@ -377,13 +515,9 @@ class getvar implements ArrayAccess {
 
 
 
-	public function id($name='id', $flags=false) {
-		return (int) $this($name, $flags);
-	}
-
-
-
-
+	////////////////////////////////////////////////////////////////////////////
+	// GET AN ITEM BY $NAME, AND THEN UNSET IT SO IT CANNOT BE READ AGAIN
+	////////////////////////////////////////////////////////////////////////////
 	public function password($name='password', $flags=false) {
 		$password = $this($name, $flags);
 		unset($this->{$name});
@@ -393,19 +527,41 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// GET A BOOLEAN VALUE, CONVERTING COMMON STRING NAMES
+	////////////////////////////////////////////////////////////////////////////
 	public function bool($name, $flags=false) {
 		$value = $this($name, $flags);
 		if ($value === NULL) return NULL;
-		if (!strcasecmp($value, 'true'))	return true;
-		if (!strcasecmp($value, 'false'))	return false;
-		if (!strcasecmp($value, 'null'))	return false;
-		if (!strcasecmp($value, 'nil'))		return false;
-		return (bool) $value;
+
+		//	'FALSE' (NOTE: 'TRUE' IS HANDLED BY DEFAULT CLAUSE)
+		if (!strcasecmp($value, 'false'))		return false;
+
+		//	'NULL'
+		if (!strcasecmp($value, 'null'))		return false;
+
+		//	'NIL' - LANGUAGES SUCH AS [GO], [RUBY], AND [LUA]
+		if (!strcasecmp($value, 'nil'))			return false;
+
+		//	'NONE' - LANGUAGES SUCH AS [PYTHON]
+		if (!strcasecmp($value, 'none'))		return false;
+
+		//	'NAN' - NOT A NUMBER
+		if (!strcasecmp($value, 'nan'))			return false;
+
+		//	'UNDEFINED' - LANGUAGES SUCH AS [JAVASCRIPT]
+		if (!strcasecmp($value, 'undefined'))	return false;
+
+		//	DEFAULT - USE PHP'S BUILT IN CONVERSION
+		return !empty($value);
 	}
 
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// GET A HASH VALUE, OR NULL ON ERROR
+	////////////////////////////////////////////////////////////////////////////
 	public function hash($name='hash', $binary=false, $flags=false) {
 		$hash = $this($name, $flags);
 		if ($hash === NULL)			return NULL;
@@ -417,9 +573,12 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// GET AN ARRAY OF HASHES
+	////////////////////////////////////////////////////////////////////////////
 	public function hashArray($name='hash', $binary=false, $flags=false) {
 		$value = $this($name, $flags);
-		if (!is_array($value)) $value = array();
+		if (!is_array($value)) $value = [];
 		foreach ($value as $key => &$hash) {
 			if ($hash === NULL) continue;
 			if (!ctype_xdigit($hash)) {
@@ -434,6 +593,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// GET AN ARRAY OF HASHES FROM A CHARACTER SEPARATED LIST
+	////////////////////////////////////////////////////////////////////////////
 	public function hashList($name, $separator=',', $flags=false) {
 		$value = $this->lists($name, $separator, $flags);
 		foreach ($value as $key => $hash) {
@@ -446,6 +608,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// GET A VALUE CONVERTED FROM HEX INTO BINARY
+	////////////////////////////////////////////////////////////////////////////
 	public function binary($name='hash', $flags=false) {
 		return $this->hash($name, true, $flags);
 	}
@@ -453,6 +618,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// GET AN ARRAY OF VALUES CONVERTED FROM HEX TO BINARY
+	////////////////////////////////////////////////////////////////////////////
 	public function binaryArray($name='hash', $flags=false) {
 		return $this->hashArray($name, true, $flags);
 	}
@@ -460,6 +628,10 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// RETURN A UNIX TIMESTAMP
+	// PERFORM AUTOMATIC CONVERSION FROM DATE/TIME STRINGS
+	////////////////////////////////////////////////////////////////////////////
 	public function timestamp($name, $flags=false) {
 		$value = $this($name, $flags);
 		if ($value === NULL) return NULL;
@@ -470,6 +642,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// CONVERT A STRING TO UTF-8
+	////////////////////////////////////////////////////////////////////////////
 	protected function _utf8($value) {
 		if ($value === NULL) return NULL;
 
@@ -481,6 +656,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// CLEAN A VALUE
+	////////////////////////////////////////////////////////////////////////////
 	protected function _clean($value, $flags=false) {
 		if ($flags === false) $flags = $this->_default;
 
@@ -494,9 +672,12 @@ class getvar implements ArrayAccess {
 		//IF NO VALUE, RETURN
 		if ($value === NULL) return $value;
 
-		//CONVERT UNICODE SPACE CHARACTER
+		//CONVERT UNICODE SPACE CHARACTERS TO NORMAL [SPACE]
 		if (($flags & _GETVAR_UNICODE) == 0) {
-			$value = str_replace(_GETVAR_SPACE, ' ', $value);
+			$value = preg_replace(
+				'/[\x{A0}\x{2000}-\x{200D}\x{202F}\x{205F}\x{2060}\x{3000}\x{FEFF}]+/u',
+				' ', $value
+			);
 		}
 
 		//TRIM THE VALUE
@@ -511,7 +692,10 @@ class getvar implements ArrayAccess {
 
 		//REMOVE CURRENCY SYMBOLS
 		if (($flags & _GETVAR_CURRENCY) > 0) {
-			$value = preg_replace('/^[\$\s\x{A2}-\x{A5}\x{20A0}-\x{20CF}\x{10192}]+/u', '', $value);
+			$value = preg_replace(
+				'/[,\$\s\x{A2}-\x{A5}\x{20A0}-\x{20CF}\x{10192}]+/u',
+				'', $value
+			);
 		}
 
 		//CLEAN OUT HTML SPECIAL CHARACTERS
@@ -530,6 +714,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// PHP MAGIC METHOD - WE ARE A READ/DELETE ONLY INSTANCE, THROW EXCEPTION
+	////////////////////////////////////////////////////////////////////////////
 	public function __set($key, $value) {
 		throw new Exception('Cannot set values on class getvar');
 	}
@@ -537,6 +724,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// ARRAYACCESS - WE ARE A READ/DELETE ONLY INSTANCE, THROW EXCEPTION
+	////////////////////////////////////////////////////////////////////////////
 	public function offsetSet($key, $value) {
 		throw new Exception('Cannot set values on class getvar');
 	}
@@ -544,6 +734,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// PHP MAGIC METHOD - GET THE $_GET/$_POST VALUE FOR THE GIVEN $KEY
+	////////////////////////////////////////////////////////////////////////////
 	public function __get($key) {
 		return $this($key);
 	}
@@ -551,6 +744,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// ARRAYACCESS - GET THE $_GET/$_POST VALUE FOR THE GIVEN $KEY
+	////////////////////////////////////////////////////////////////////////////
 	public function offsetGet($key) {
 		return $this($key);
 	}
@@ -558,6 +754,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// PHP MAGIC METHOD - CHECK TO SEE IF KEY EXISTS IN $_GET/$_POST
+	////////////////////////////////////////////////////////////////////////////
 	public function __isset($key) {
 		if (!($this->_default & _GETVAR_NOPOST)) {
 			if (isset($_POST[$key])) return true;
@@ -573,6 +772,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// ARRAYACCESS - CHECK TO SEE IF $KEY EXISTS IN $_GET/$_POST
+	////////////////////////////////////////////////////////////////////////////
 	public function offsetExists($key) {
 		return isset($this->{$key});
 	}
@@ -580,6 +782,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// PHP MAGIC METHOD - REMOVE A $KEY FROM $_GET/$_POST
+	////////////////////////////////////////////////////////////////////////////
 	public function __unset($key) {
 		if (!($this->_default & _GETVAR_NOPOST)) {
 			unset($_POST[$key]);
@@ -595,6 +800,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// ARRAYACCESS - REMOVE A $KEY FROM $_GET/$_POST
+	////////////////////////////////////////////////////////////////////////////
 	public function offsetUnset($key) {
 		unset($this->{$key});
 	}
@@ -602,6 +810,9 @@ class getvar implements ArrayAccess {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// MEMBER VARIABLES
+	////////////////////////////////////////////////////////////////////////////
 	public			$_default;
 	private			$_rawget	= NULL;
 	private			$_rawpost	= NULL;
