@@ -818,6 +818,6 @@ class getvar implements ArrayAccess {
 	private			$_rawpost	= NULL;
 	private			$_rawjson	= NULL;
 	private			$_type		= NULL;
-	public static	$version	= 'Getvar 2.8.3';
+	public static	$version	= 'Getvar 2.9.0';
 
 }
