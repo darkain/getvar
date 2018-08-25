@@ -12,7 +12,7 @@ into either $_GET or $_POST without having to worry about it as a developer.
 ### Getting Started
 ```php
 //First, create an instance of the GetVar object
-require_once('getvar/getvar.php.inc');
+require_once('getvar/getvar.inc.php');
 $get = new getvar;
 ```
 
