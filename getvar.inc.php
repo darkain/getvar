@@ -411,7 +411,7 @@ class getvar implements ArrayAccess {
 	// SAME AS INVOKE(), BUT FORCES CONVERSION TO UTF-8
 	////////////////////////////////////////////////////////////////////////////
 	public function string($name, $flags=false) {
-		return $this->_utf8((string)$this($name, $flags));
+		return (string)$this($name, $flags);
 	}
 
 
@@ -464,7 +464,7 @@ class getvar implements ArrayAccess {
 		if ($flags === false) $flags = $this->_default;
 		$value = $this($name, $flags|_GETVAR_NULL);
 		if ($value === NULL) return NULL;
-		return ($value === '') ? NULL : $this->_utf8((string)$value);
+		return ($value === '') ? NULL : ((string)$value);
 	}
 
 
@@ -478,7 +478,7 @@ class getvar implements ArrayAccess {
 		if (!is_array($value)) $value = [];
 		foreach ($value as &$item) {
 			if ($item === NULL) continue;
-			$item = $this->_utf8((string)$item);
+			$item = (string)$item;
 		}
 		return $value;
 	}
@@ -493,7 +493,7 @@ class getvar implements ArrayAccess {
 		$value = $this->lists($name, $separator, $flags);
 		foreach ($value as &$item) {
 			if ($item === NULL) continue;
-			$item = $this->_utf8((string)$item);
+			$item = (string)$item;
 		}
 		return $value;
 	}
@@ -671,20 +671,6 @@ class getvar implements ArrayAccess {
 
 
 	////////////////////////////////////////////////////////////////////////////
-	// CONVERT A STRING TO UTF-8
-	////////////////////////////////////////////////////////////////////////////
-	protected function _utf8($value) {
-		if ($value === NULL) return NULL;
-
-		return extension_loaded('mbstring')
-				? mb_convert_encoding($value, 'UTF-8', 'UTF-8')
-				: iconv('UTF-8', 'UTF-8//TRANSLIT', $value);
-	}
-
-
-
-
-	////////////////////////////////////////////////////////////////////////////
 	// CLEAN A VALUE
 	////////////////////////////////////////////////////////////////////////////
 	protected function _clean($value, $flags=false) {
@@ -699,6 +685,32 @@ class getvar implements ArrayAccess {
 
 		//IF NO VALUE, RETURN
 		if ($value === NULL) return $value;
+
+
+		//VALIDATE UTF-8 (MULTI-BYTE STRING EXTENSION)
+		if (extension_loaded('mbstring')) {
+			if (mb_detect_encoding($value, 'UTF-8', true) !== 'UTF-8') {
+				$value = mb_convert_encoding($value, 'ISO-8859-1', 'UTF-8');
+			}
+
+		//VALIDATE UTF-8 (ICONV EXTENSION)
+		} else if (extension_loaded('iconv')) {
+			$value = iconv('UTF-8', 'UTF-8//TRANSLIT', $value);
+
+		//VALIDATE UTF-8 MANUALLY
+		} else {
+			$value = preg_replace(
+				'/((?:
+					[\x00-\x7F] |
+					[\xC2-\xDF][\x80-\xBF] |
+					[\xE0-\xEF][\x80-\xBF]{2} |
+					[\xF0-\xF7][\x80-\xBF]{3}
+				)+)|./x',
+				'$1',
+				$value
+			);
+		}
+
 
 		//CONVERT UNICODE SPACE CHARACTERS TO NORMAL [SPACE]
 		if (($flags & _GETVAR_UNICODE) == 0) {
