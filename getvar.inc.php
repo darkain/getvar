@@ -704,7 +704,7 @@ class getvar implements ArrayAccess {
 					[\x00-\x7F] |
 					[\xC2-\xDF][\x80-\xBF] |
 					[\xE0-\xEF][\x80-\xBF]{2} |
-					[\xF0-\xF7][\x80-\xBF]{3}
+					[\xF0-\xF4][\x80-\xBF]{3}
 				)+)|./x',
 				'$1',
 				$value
