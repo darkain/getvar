@@ -740,7 +740,12 @@ class getvar implements ArrayAccess {
 
 		//CLEAN OUT HTML SPECIAL CHARACTERS
 		if (($flags & _GETVAR_HTMLSAFE) > 0) {
-			$value = htmlspecialchars($value, ENT_QUOTES);
+			$value = htmlspecialchars(
+				$value,
+				ENT_QUOTES | ENT_HTML5 | ENT_SUBSTITUTE,
+				'UTF-8',
+				true
+			);
 		}
 
 		//CLEAN OUT URL PARAMATER SPECIAL CHARACTERS
