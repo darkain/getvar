@@ -8,8 +8,6 @@
 define('_GETVAR_BASIC',		0 <<  0);
 define('_GETVAR_NOGET',		1 <<  0);
 define('_GETVAR_NOPOST',	1 <<  1);
-define('_GETVAR_HTMLSAFE',	1 <<  3);
-define('_GETVAR_URLSAFE',	1 <<  4);
 define('_GETVAR_NOTRIM',	1 <<  5);
 define('_GETVAR_NODOUBLE',	1 <<  6);
 define('_GETVAR_UNICODE',	1 <<  7);
@@ -85,7 +83,7 @@ class getvar implements ArrayAccess {
 		}
 
 		//CLEAN AND RETURN VALUE
-		return $this->_clean($value, $flags);
+		return $this->clean($value, $flags);
 	}
 
 
@@ -158,7 +156,7 @@ class getvar implements ArrayAccess {
 	////////////////////////////////////////////////////////////////////////////
 	public function server($name, $default=NULL, $flags=false) {
 		if (!array_key_exists($name, $_SERVER)) return $default;
-		return $this->_clean($_SERVER[$name], $flags);
+		return $this->clean($_SERVER[$name], $flags);
 	}
 
 
@@ -169,7 +167,7 @@ class getvar implements ArrayAccess {
 	////////////////////////////////////////////////////////////////////////////
 	public function session($name, $default=NULL, $flags=false) {
 		if (!array_key_exists($name, $_SESSION)) return $default;
-		return $this->_clean($_SESSION[$name], $flags);
+		return $this->clean($_SESSION[$name], $flags);
 	}
 
 
@@ -408,7 +406,7 @@ class getvar implements ArrayAccess {
 
 
 	////////////////////////////////////////////////////////////////////////////
-	// SAME AS INVOKE(), BUT FORCES CONVERSION TO UTF-8
+	// SAME AS INVOKE(), BUT FORCES CONVERSION TO STRING
 	////////////////////////////////////////////////////////////////////////////
 	public function string($name, $flags=false) {
 		return (string)$this($name, $flags);
@@ -673,12 +671,12 @@ class getvar implements ArrayAccess {
 	////////////////////////////////////////////////////////////////////////////
 	// CLEAN A VALUE
 	////////////////////////////////////////////////////////////////////////////
-	protected function _clean($value, $flags=false) {
+	public function clean($value, $flags=false) {
 		if ($flags === false) $flags = $this->_default;
 
 		if (is_array($value)) {
 			foreach ($value as &$item) {
-				$item = $this->_clean($item, $flags);
+				$item = $this->clean($item, $flags);
 			} unset($item);
 			return $value;
 		}
@@ -736,21 +734,6 @@ class getvar implements ArrayAccess {
 				'/[,\$\s\x{A2}-\x{A5}\x{20A0}-\x{20CF}\x{10192}]+/u',
 				'', $value
 			);
-		}
-
-		//CLEAN OUT HTML SPECIAL CHARACTERS
-		if (($flags & _GETVAR_HTMLSAFE) > 0) {
-			$value = htmlspecialchars(
-				$value,
-				ENT_QUOTES | ENT_HTML5 | ENT_SUBSTITUTE,
-				'UTF-8',
-				true
-			);
-		}
-
-		//CLEAN OUT URL PARAMATER SPECIAL CHARACTERS
-		if (($flags & _GETVAR_URLSAFE) > 0) {
-			$value = rawurlencode($value);
 		}
 
 		return $value;
@@ -873,6 +856,6 @@ class getvar implements ArrayAccess {
 	private			$_rawpost	= NULL;
 	private			$_rawjson	= NULL;
 	private			$_type		= NULL;
-	public static	$version	= 'Getvar 2.9.0';
+	public static	$version	= 'Getvar 2.9.1';
 
 }
