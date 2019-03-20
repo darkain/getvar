@@ -41,9 +41,16 @@ class getvar implements ArrayAccess {
 	// $RECURSE - OPTIONAL - SEARCH RECURSIVELY FOR VALUE
 	////////////////////////////////////////////////////////////////////////////
 	public function __invoke($name=false, $flags=false, $recurse=false) {
-		if ($flags === false) $flags = $this->_default;
+		if (is_callable($flags)) {
+			$callback	= $flags;
+			$flags		= NULL;
+		}
 
-		//RECURSIVE SEARCH
+		if ($flags === false  ||  $flags === NULL) {
+			$flags		= $this->_default;
+		}
+
+		// RECURSIVE SEARCH
 		if (is_array($name)  ||  is_object($name)) {
 			foreach ($name as $item) {
 				$value = $this($item, $flags, true);
@@ -52,7 +59,7 @@ class getvar implements ArrayAccess {
 			$name = 0;
 		}
 
-		//ATTEMPT TO GET THE VALUE FROM POST
+		// ATTEMPT TO GET THE VALUE FROM POST
 		if (!isset($value)  &&  !($flags & _GETVAR_NOPOST)) {
 			if (is_bool($name)) return $this->post($name);
 
@@ -68,21 +75,26 @@ class getvar implements ArrayAccess {
 			}
 		}
 
-		//ATTEMPT TO GET THE VALUE FROM GET
+		// ATTEMPT TO GET THE VALUE FROM GET
 		if (!isset($value)  &&  !($flags & _GETVAR_NOGET)) {
 			if ($name === false) return $this->get();
 			if (isset($_GET[$name])) $value = $_GET[$name];
 		}
 
-		//HANDLE RECURSIVE SEARCHING
+		// HANDLE RECURSIVE SEARCHING
 		if (!isset($value)  &&  $recurse) return NULL;
 
-		//VALUE NOT FOUND
+		// HANDLE CUSTOM CALLBACK
+		if (!empty($callback)) {
+			return $callback(isset($value) ? $value : NULL);
+		}
+
+		// VALUE NOT FOUND
 		if (!isset($value)  ||  is_null($value)  ||  $value === '') {
 			return ($flags & _GETVAR_NULL) ? NULL : '';
 		}
 
-		//CLEAN AND RETURN VALUE
+		// CLEAN AND RETURN VALUE
 		return $this->clean($value, $flags);
 	}
 
