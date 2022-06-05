@@ -124,11 +124,12 @@ class getvar implements ArrayAccess {
 		if ($this->_rawpost === NULL) {
 			$this->_rawpost = @file_get_contents('php://input');
 		}
-		if (!$object) return $this->_rawpost;
+
+		if ($object === false) return $this->_rawpost;
 
 		if ($this->_rawjson === NULL) {
 			$this->_rawjson = @json_decode(
-				$this->_rawpost,
+				($object === true ? $this->_rawpost : $this($object)),
 				true,
 				512,
 				JSON_BIGINT_AS_STRING
