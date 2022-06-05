@@ -72,6 +72,9 @@ class getvar implements ArrayAccess {
 
 			} else if (isset($_POST[$name])) {
 				$value = $_POST[$name];
+
+			} else if (isset($this->_rawjson[$name])) {
+				$value = $this->_rawjson[$name];
 			}
 		}
 
