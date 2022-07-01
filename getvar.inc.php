@@ -243,6 +243,34 @@ class getvar implements ArrayAccess {
 
 
 	////////////////////////////////////////////////////////////////////////////
+	// USE PHP'S BUILT IN FILTER_VAR TO SANITIZE INPUT
+	// https://www.php.net/manual/en/function.filter-var.php
+	////////////////////////////////////////////////////////////////////////////
+	public function filter($name, $filter, $options=0, $flags=false) {
+		return filter_var($this($name, $flags), $filter, $options);
+	}
+
+
+
+
+	////////////////////////////////////////////////////////////////////////////
+	// USE PHP'S BUILT IN FILTER_VAR TO SANITIZE AN ARRAY OF INPUTS
+	// https://www.php.net/manual/en/function.filter-var.php
+	////////////////////////////////////////////////////////////////////////////
+	public function filterArray($name, $filter, $options=0, $flags=false) {
+		$value = $this($name, $flags);
+		if (!is_array($value)) $value = [];
+		foreach ($value as &$item) {
+			if ($item === NULL) continue;
+			$item = filter_var($item, $filter, $options);
+		}
+		return $value;
+	}
+
+
+
+
+	////////////////////////////////////////////////////////////////////////////
 	// RETURN AN INTEGER VALUE BY $NAME
 	////////////////////////////////////////////////////////////////////////////
 	public function int($name, $flags=false) {
