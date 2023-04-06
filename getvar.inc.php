@@ -731,7 +731,9 @@ class getvar implements ArrayAccess {
 	// CLEAN A VALUE
 	////////////////////////////////////////////////////////////////////////////
 	public function clean($value, $flags=false) {
-		if ($flags === false) $flags = $this->_default;
+		if ( ($flags === false) || ($flags === NULL) ) {
+			$flags = $this->_default;
+		}
 
 		if (is_array($value)) {
 			foreach ($value as &$item) {
